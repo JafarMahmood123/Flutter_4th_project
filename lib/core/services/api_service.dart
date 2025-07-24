@@ -40,6 +40,4 @@ class ApiService {
       throw Exception('Failed to load hotels');
     }
   }
-
-// Add similar methods for getRestaurants() and getEvents()
 }

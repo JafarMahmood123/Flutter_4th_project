@@ -11,7 +11,6 @@ class HomeScreen extends StatelessWidget {
         appBar: AppBar(title: Text('Dashboard')),
         body: Consumer<HomeViewModel>(
           builder: (context, viewModel, child) {
-            // Here you can use a TabBar to switch between hotels, restaurants, and events
             return ListView.builder(
               itemCount: viewModel.hotels.length,
               itemBuilder: (context, index) {
