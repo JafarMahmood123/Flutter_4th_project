@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ApiService {
-  final String _baseUrl = "https://003ee6d47ba2.ngrok-free.app"; // Your backend URL
+  final String _baseUrl = "https://45f14d8dee4a.ngrok-free.app"; // Your backend URL
 
   Future<String?> login(String email, String password) async {
     final response = await http.post(
@@ -38,6 +38,25 @@ class ApiService {
       return jsonDecode(response.body);
     } else {
       throw Exception('Failed to load hotels');
+    }
+  }
+
+  Future<List<dynamic>> getRestaurants() async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token');
+
+    final response = await http.get(
+      Uri.parse('$_baseUrl/Restaurants'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    } else {
+      throw Exception('Failed to load restaurants');
     }
   }
 }

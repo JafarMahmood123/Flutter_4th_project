@@ -8,17 +8,162 @@ class HomeScreen extends StatelessWidget {
     return ChangeNotifierProvider(
       create: (context) => HomeViewModel()..fetchData(),
       child: Scaffold(
-        appBar: AppBar(title: Text('Dashboard')),
+        appBar: AppBar(
+          title: Text('Explore'),
+          centerTitle: true,
+          elevation: 0,
+        ),
         body: Consumer<HomeViewModel>(
           builder: (context, viewModel, child) {
-            return ListView.builder(
-              itemCount: viewModel.hotels.length,
-              itemBuilder: (context, index) {
-                return ListTile(
-                  title: Text(viewModel.hotels[index].name),
-                  subtitle: Text('Rating: ${viewModel.hotels[index].starRate}'),
-                );
-              },
+            if (viewModel.isLoading) {
+              return Center(child: CircularProgressIndicator());
+            }
+
+            return SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Restaurants Section
+                  Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Text(
+                      'Top Restaurants',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  SizedBox(
+                    height: 180, // Increased height
+                    child: ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      padding: EdgeInsets.symmetric(horizontal: 16),
+                      itemCount: viewModel.restaurants.length,
+                      itemBuilder: (context, index) {
+                        final restaurant = viewModel.restaurants[index];
+                        return Container(
+                          width: 160, // Increased width
+                          margin: EdgeInsets.only(right: 12),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(8),
+                                child: Container(
+                                  height: 120, // Increased image height
+                                  width: double.infinity,
+                                  child: Image.network(
+                                    restaurant.pictureUrl,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (context, error, stackTrace) =>
+                                        Container(
+                                          height: 120,
+                                          color: Colors.grey[200],
+                                          child: Icon(Icons.restaurant, size: 40),
+                                        ),
+                                  ),
+                                ),
+                              ),
+                              SizedBox(height: 8),
+                              Text(
+                                restaurant.name,
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w500,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                maxLines: 1,
+                              ),
+                              SizedBox(height: 4),
+                              Row(
+                                children: [
+                                  Icon(Icons.star, color: Colors.amber, size: 16),
+                                  SizedBox(width: 4),
+                                  Text(
+                                    restaurant.starRating.toStringAsFixed(1),
+                                    style: TextStyle(fontSize: 12),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                  SizedBox(height: 24),
+
+                  // Hotels Section
+                  Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Text(
+                      'Recommended Hotels',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  SizedBox(
+                    height: 180, // Increased height
+                    child: ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      padding: EdgeInsets.symmetric(horizontal: 16),
+                      itemCount: viewModel.hotels.length,
+                      itemBuilder: (context, index) {
+                        final hotel = viewModel.hotels[index];
+                        return Container(
+                          width: 160, // Increased width
+                          margin: EdgeInsets.only(right: 12),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(8),
+                                child: Container(
+                                  height: 120, // Increased image height
+                                  width: double.infinity,
+                                  child: Image.network(
+                                    hotel.pictureUrl,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (context, error, stackTrace) =>
+                                        Container(
+                                          height: 120,
+                                          color: Colors.grey[200],
+                                          child: Icon(Icons.hotel, size: 40),
+                                        ),
+                                  ),
+                                ),
+                              ),
+                              SizedBox(height: 8),
+                              Text(
+                                hotel.name,
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w500,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                maxLines: 1,
+                              ),
+                              SizedBox(height: 4),
+                              Row(
+                                children: [
+                                  Icon(Icons.star, color: Colors.amber, size: 16),
+                                  SizedBox(width: 4),
+                                  Text(
+                                    hotel.starRate.toStringAsFixed(1),
+                                    style: TextStyle(fontSize: 12),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                  SizedBox(height: 24),
+                ],
+              ),
             );
           },
         ),

@@ -7,21 +7,23 @@ class Hotel {
   final String url;
   final double starRate;
   final int numberOfRooms;
+  final String pictureUrl;
 
   Hotel({required this.id, required this.name, required this.description,
     required this.latitude, required this.longitude, required this.url,
-    required this.starRate, required this.numberOfRooms});
+    required this.starRate, required this.numberOfRooms, required this.pictureUrl});
 
   factory Hotel.fromJson(Map<String, dynamic> json) {
     return Hotel(
-      id: json['id'],
-      name: json['name'],
-      description: json['description'],
-      latitude: json['latitude'].toDouble(),
-      longitude: json['longitude'].toDouble(),
-      url: json['url'],
-      starRate: json['starRate'].toDouble(),
-      numberOfRooms: int.parse(json['numberOfRooms']),
+      id: json['id'] ?? '',
+      name: json['name'] ?? 'No Name',
+      description: json['description'] ?? 'No Description',
+      latitude: (json['latitude'] ?? 0.0).toDouble(),
+      longitude: (json['longitude'] ?? 0.0).toDouble(),
+      url: json['url'] ?? '',
+      starRate: (json['starRate'] ?? 0.0).toDouble(),
+      numberOfRooms: int.tryParse(json['numberOfRooms']?.toString() ?? '') ?? 0,
+      pictureUrl: json['pictureUrl'] ?? '',
     );
   }
 }
