@@ -24,13 +24,16 @@ class RestaurantBookingViewModel with ChangeNotifier {
   TimeOfDay? _selectedEndTime;
   TimeOfDay? get selectedEndTime => _selectedEndTime;
 
+  int _numberOfPeople = 1;
+  int get numberOfPeople => _numberOfPeople;
+
   final Map<String, int> _dishQuantities = {};
   Map<String, int> get dishQuantities => _dishQuantities;
 
   double get totalOrderPrice {
     double total = 0.0;
     _dishQuantities.forEach((dishId, quantity) {
-      final dish = _dishes.firstWhere((d) => d.id == dishId);
+      final dish = _dishes.firstWhere((d) => d.id == dishId, orElse: () => Dish(id: '', name: '', description: '', price: 0.0, imageUrl: '', restaurantId: ''));
       total += dish.price * quantity;
     });
     return total;
@@ -42,7 +45,8 @@ class RestaurantBookingViewModel with ChangeNotifier {
     notifyListeners();
 
     try {
-      final List<dynamic> dishData = await _apiService.getDishesByRestaurantId(restaurantId);
+      final List<dynamic> dishData =
+      await _apiService.getDishesByRestaurantId(restaurantId);
       _dishes = dishData.map((json) => Dish.fromJson(json)).toList();
       // Initialize quantities to 0
       for (var dish in _dishes) {
@@ -84,35 +88,73 @@ class RestaurantBookingViewModel with ChangeNotifier {
     notifyListeners();
   }
 
+  void setNumberOfPeople(int count) {
+    if (count > 0) {
+      _numberOfPeople = count;
+      notifyListeners();
+    }
+  }
+
   Future<bool> submitBooking(String restaurantId) async {
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
 
-    if (_selectedDate == null || _selectedStartTime == null || _selectedEndTime == null) {
-      _errorMessage = "Please select a date, start time, and end time for your booking.";
+    if (_selectedDate == null ||
+        _selectedStartTime == null ||
+        _selectedEndTime == null) {
+      _errorMessage =
+      "Please select a date, start time, and end time for your booking.";
       _isLoading = false;
       notifyListeners();
       return false;
     }
 
+    // Basic validation for end time being after start time
+    final startMinutes = _selectedStartTime!.hour * 60 + _selectedStartTime!.minute;
+    final endMinutes = _selectedEndTime!.hour * 60 + _selectedEndTime!.minute;
+    if (endMinutes <= startMinutes) {
+      _errorMessage = "End time must be after the start time.";
+      _isLoading = false;
+      notifyListeners();
+      return false;
+    }
+
+
     final Map<String, int> dishesToBook = {};
     _dishQuantities.forEach((dishId, quantity) {
       if (quantity > 0) {
-        dishesToBook[dishId.toString()] = quantity;
+        dishesToBook[dishId] = quantity;
       }
     });
 
     try {
-      // Construct the full DateTime objects
-      final DateTime bookingStartDateTime = DateTime(
+      final String? customerId = await _apiService.getCustomerId();
+      if (customerId == null) {
+        _errorMessage = "Could not identify customer. Please log in again.";
+        _isLoading = false;
+        notifyListeners();
+        return false;
+      }
+
+      // Construct the receiveDateTime in UTC format
+      final DateTime receiveDateTime = DateTime.utc(
         _selectedDate!.year,
         _selectedDate!.month,
         _selectedDate!.day,
         _selectedStartTime!.hour,
         _selectedStartTime!.minute,
       );
-      final DateTime bookingEndDateTime = DateTime(
+
+      // Construct start and end DateTime to calculate duration
+      final DateTime localStartDateTime = DateTime(
+        _selectedDate!.year,
+        _selectedDate!.month,
+        _selectedDate!.day,
+        _selectedStartTime!.hour,
+        _selectedStartTime!.minute,
+      );
+      final DateTime localEndDateTime = DateTime(
         _selectedDate!.year,
         _selectedDate!.month,
         _selectedDate!.day,
@@ -120,16 +162,21 @@ class RestaurantBookingViewModel with ChangeNotifier {
         _selectedEndTime!.minute,
       );
 
+      final Duration duration = localEndDateTime.difference(localStartDateTime);
+      final String bookingDurationTime =
+          "${duration.inHours.toString().padLeft(2, '0')}:${(duration.inMinutes % 60).toString().padLeft(2, '0')}:00";
+
       final bool success = await _apiService.createBooking(
         restaurantId: restaurantId,
-        bookingDate: bookingStartDateTime.toIso8601String(),
-        bookingStartTime: "${_selectedStartTime!.hour.toString().padLeft(2, '0')}:${_selectedStartTime!.minute.toString().padLeft(2, '0')}",
-        bookingEndTime: "${_selectedEndTime!.hour.toString().padLeft(2, '0')}:${_selectedEndTime!.minute.toString().padLeft(2, '0')}",
-        dishes: dishesToBook,
+        userId: customerId,
+        receiveDateTime: receiveDateTime.toIso8601String(),
+        bookingDurationTime: bookingDurationTime,
+        numberOfPeople: _numberOfPeople,
+        tableNumber: 0, // Hardcoded as table selection UI is not implemented
+        dishesIdsWithQuantities: dishesToBook,
       );
       return success;
     } catch (e) {
-      print("############################################################################");
       _errorMessage = "Failed to submit booking: ${e.toString()}";
       print(_errorMessage);
       return false;

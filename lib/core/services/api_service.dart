@@ -1,9 +1,12 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:jwt_decoder/jwt_decoder.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ApiService {
   final String _baseUrl = "https://45f14d8dee4a.ngrok-free.app"; // Your backend URL
+
+  // No changes to login, getHotels, getRestaurants, getRestaurantsById, getDishesByRestaurantId
 
   Future<String?> login(String email, String password) async {
     final response = await http.post(
@@ -13,7 +16,6 @@ class ApiService {
     );
 
     if (response.statusCode == 200) {
-      // Assuming your backend returns the token directly in the body
       final token = response.body;
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('token', token);
@@ -98,35 +100,80 @@ class ApiService {
     }
   }
 
+  /// Decodes the JWT to extract the customer ID.
+  Future<String?> getCustomerId() async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token');
+    print('DEBUG: Retrieved token from storage: $token');
+
+    if (token != null && token.isNotEmpty) {
+      try {
+        Map<String, dynamic> decodedToken = JwtDecoder.decode(token);
+        print('DEBUG: Decoded token payload: $decodedToken');
+
+        final userId = decodedToken['sub'];
+
+        print('DEBUG: Extracted userId with current key: $userId');
+        return userId;
+
+      } catch (e) {
+        print("ERROR: Failed to decode token: $e");
+        return null;
+      }
+    }
+    print('ERROR: Token was not found in SharedPreferences.');
+    return null;
+  }
+
+
+  /// Creates a booking with the new JSON structure.
   Future<bool> createBooking({
     required String restaurantId,
-    required String bookingDate,
-    required String bookingStartTime,
-    required String bookingEndTime,
-    required Map<String, dynamic> dishes,
+    required String? userId,
+    required String receiveDateTime,
+    required String bookingDurationTime,
+    required int numberOfPeople,
+    required int tableNumber,
+    required Map<String, int> dishesIdsWithQuantities,
   }) async {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('token');
 
+    if (userId == null) {
+      throw Exception('Customer ID not found. User might not be logged in.');
+    }
+
+    print("===============================================================================");
+    print(receiveDateTime);
+
+    final body = jsonEncode({
+      'receiveDateTime': receiveDateTime,
+      'bookingDurationTime': bookingDurationTime,
+      'numberOfPeople': numberOfPeople,
+      'tableNumber': tableNumber,
+      'restaurantId': restaurantId,
+      'userId': userId,
+      'addBookingDishRequest': {
+        'dishesIdsWithQuantities': dishesIdsWithQuantities,
+      },
+    });
+
+    print(body);
+
     final response = await http.post(
-      Uri.parse('$_baseUrl/Bookings'), // Assuming this endpoint for bookings
+      Uri.parse('$_baseUrl/RestaurantBookings'),
       headers: {
         'Content-Type': 'application/json',
         'Authorization': 'Bearer $token',
       },
-      body: jsonEncode({
-        'restaurantId': restaurantId,
-        'bookingDate': bookingDate,
-        'bookingStartTime': bookingStartTime,
-        'bookingEndTime': bookingEndTime,
-        'dishes': dishes,
-      }),
+      body: body,
     );
 
     if (response.statusCode == 201 || response.statusCode == 200) {
       return true; // Booking successful
     } else {
-      print('Booking failed with status: ${response.statusCode} and body: ${response.body}');
+      print(
+          'Booking failed with status: ${response.statusCode} and body: ${response.body}');
       throw Exception('Failed to create booking: ${response.body}');
     }
   }

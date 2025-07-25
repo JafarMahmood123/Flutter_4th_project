@@ -1,5 +1,3 @@
-// lib/ui/screens/restaurant_booking_screen.dart
-
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:user_flutter_project/data/models/Restaurant.dart';
@@ -9,12 +7,14 @@ import 'package:intl/intl.dart';
 class RestaurantBookingScreen extends StatelessWidget {
   final Restaurant restaurant;
 
-  const RestaurantBookingScreen({Key? key, required this.restaurant}) : super(key: key);
+  const RestaurantBookingScreen({Key? key, required this.restaurant})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
-      create: (context) => RestaurantBookingViewModel()..fetchDishes(restaurant.id),
+      create: (context) =>
+      RestaurantBookingViewModel()..fetchDishes(restaurant.id),
       child: Scaffold(
         appBar: AppBar(
           title: Text('Book at ${restaurant.name}'),
@@ -23,11 +23,11 @@ class RestaurantBookingScreen extends StatelessWidget {
         ),
         body: Consumer<RestaurantBookingViewModel>(
           builder: (context, viewModel, child) {
-            if (viewModel.isLoading) {
+            if (viewModel.isLoading && viewModel.dishes.isEmpty) {
               return const Center(child: CircularProgressIndicator());
             }
 
-            if (viewModel.errorMessage != null) {
+            if (viewModel.errorMessage != null && viewModel.dishes.isEmpty) {
               return Center(
                 child: Padding(
                   padding: const EdgeInsets.all(16.0),
@@ -43,7 +43,10 @@ class RestaurantBookingScreen extends StatelessWidget {
                 children: [
                   Text(
                     'Select Dishes:',
-                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
+                    style: Theme.of(context)
+                        .textTheme
+                        .headlineSmall
+                        ?.copyWith(fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 16),
                   ListView.builder(
@@ -78,15 +81,25 @@ class RestaurantBookingScreen extends StatelessWidget {
                                   children: [
                                     Text(
                                       dish.name,
-                                      style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .titleMedium
+                                          ?.copyWith(
+                                          fontWeight: FontWeight.bold),
                                     ),
                                     Text(
                                       '€${dish.price.toStringAsFixed(2)}',
-                                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: Colors.green[700]),
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .bodyLarge
+                                          ?.copyWith(color: Colors.green[700]),
                                     ),
                                     Text(
                                       dish.description,
-                                      style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.grey[600]),
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .bodySmall
+                                          ?.copyWith(color: Colors.grey[600]),
                                       maxLines: 2,
                                       overflow: TextOverflow.ellipsis,
                                     ),
@@ -96,13 +109,17 @@ class RestaurantBookingScreen extends StatelessWidget {
                               Row(
                                 children: [
                                   IconButton(
-                                    icon: const Icon(Icons.remove_circle_outline),
-                                    onPressed: () => viewModel.decrementDishQuantity(dish.id),
+                                    icon:
+                                    const Icon(Icons.remove_circle_outline),
+                                    onPressed: () => viewModel
+                                        .decrementDishQuantity(dish.id),
                                   ),
                                   Text(quantity.toString()),
                                   IconButton(
-                                    icon: const Icon(Icons.add_circle_outline),
-                                    onPressed: () => viewModel.incrementDishQuantity(dish.id),
+                                    icon:
+                                    const Icon(Icons.add_circle_outline),
+                                    onPressed: () => viewModel
+                                        .incrementDishQuantity(dish.id),
                                   ),
                                 ],
                               ),
@@ -115,7 +132,10 @@ class RestaurantBookingScreen extends StatelessWidget {
                   const SizedBox(height: 24),
                   Text(
                     'Booking Details:',
-                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
+                    style: Theme.of(context)
+                        .textTheme
+                        .headlineSmall
+                        ?.copyWith(fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 16),
                   ListTile(
@@ -147,7 +167,8 @@ class RestaurantBookingScreen extends StatelessWidget {
                     onTap: () async {
                       final TimeOfDay? pickedTime = await showTimePicker(
                         context: context,
-                        initialTime: viewModel.selectedStartTime ?? TimeOfDay.now(),
+                        initialTime:
+                        viewModel.selectedStartTime ?? TimeOfDay.now(),
                       );
                       if (pickedTime != null) {
                         viewModel.setSelectedStartTime(pickedTime);
@@ -164,12 +185,44 @@ class RestaurantBookingScreen extends StatelessWidget {
                     onTap: () async {
                       final TimeOfDay? pickedTime = await showTimePicker(
                         context: context,
-                        initialTime: viewModel.selectedEndTime ?? TimeOfDay.now(),
+                        initialTime:
+                        viewModel.selectedEndTime ?? TimeOfDay.now(),
                       );
                       if (pickedTime != null) {
                         viewModel.setSelectedEndTime(pickedTime);
                       }
                     },
+                  ),
+                  const SizedBox(height: 16),
+                  // -- WIDGET FOR NUMBER OF PEOPLE --
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Number of People:',
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
+                      Row(
+                        children: [
+                          IconButton(
+                            icon: const Icon(Icons.remove_circle_outline),
+                            onPressed: viewModel.numberOfPeople > 1
+                                ? () => viewModel.setNumberOfPeople(
+                                viewModel.numberOfPeople - 1)
+                                : null,
+                          ),
+                          Text(
+                            '${viewModel.numberOfPeople}',
+                            style: Theme.of(context).textTheme.titleLarge,
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.add_circle_outline),
+                            onPressed: () => viewModel.setNumberOfPeople(
+                                viewModel.numberOfPeople + 1),
+                          ),
+                        ],
+                      ),
+                    ],
                   ),
                   const SizedBox(height: 24),
                   Row(
@@ -177,44 +230,67 @@ class RestaurantBookingScreen extends StatelessWidget {
                     children: [
                       Text(
                         'Total Order:',
-                        style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                        style: Theme.of(context)
+                            .textTheme
+                            .titleLarge
+                            ?.copyWith(fontWeight: FontWeight.bold),
                       ),
                       Text(
                         '€${viewModel.totalOrderPrice.toStringAsFixed(2)}',
-                        style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold, color: Colors.green[800]),
+                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                            fontWeight: FontWeight.bold,
+                            color: Colors.green[800]),
                       ),
                     ],
                   ),
                   const SizedBox(height: 24),
+                  if (viewModel.errorMessage != null)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 16.0),
+                      child: Text(
+                        viewModel.errorMessage!,
+                        style: TextStyle(color: Theme.of(context).colorScheme.error),
+                      ),
+                    ),
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton.icon(
                       onPressed: viewModel.isLoading
                           ? null
                           : () async {
-                        final success = await viewModel.submitBooking(restaurant.id);
-                        print("============================================================================");
+                        final success =
+                        await viewModel.submitBooking(restaurant.id);
                         if (success) {
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Booking successful!')),
+                            const SnackBar(
+                                content: Text('Booking successful!')),
                           );
-                          Navigator.of(context).pop(); // Go back to restaurant details
-                        } else {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text(viewModel.errorMessage ?? 'Failed to make booking.')),
-                          );
+                          Navigator.of(context)
+                              .pop(); // Go back to restaurant details
                         }
+                        // Error message is now displayed above the button
                       },
                       icon: viewModel.isLoading
-                          ? const CircularProgressIndicator(color: Colors.white)
+                          ? const SizedBox(
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(
+                          color: Colors.white,
+                          strokeWidth: 3,
+                        ),
+                      )
                           : const Icon(Icons.check_circle_outline),
-                      label: Text(viewModel.isLoading ? 'Submitting...' : 'Confirm Booking'),
+                      label: Text(
+                          viewModel.isLoading ? 'Submitting...' : 'Confirm Booking'),
                       style: ElevatedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
-                        textStyle: Theme.of(context).textTheme.titleMedium?.copyWith(color: Colors.white),
+                        textStyle: Theme.of(context)
+                            .textTheme
+                            .titleMedium
+                            ?.copyWith(color: Colors.white),
                       ),
                     ),
                   ),
