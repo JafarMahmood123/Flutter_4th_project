@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:user_flutter_project/ui/views/bookings_screen.dart'; // Import the new screen
 import 'package:user_flutter_project/ui/views/restaurant_screen.dart';
 import '../viewmodels/home_viewmodel.dart';
 
@@ -15,6 +16,38 @@ class HomeScreen extends StatelessWidget {
           title: Text('Explore'),
           centerTitle: true,
           elevation: 0,
+        ),
+        // Add the drawer property here
+        drawer: Drawer(
+          child: ListView(
+            padding: EdgeInsets.zero,
+            children: <Widget>[
+              const DrawerHeader(
+                decoration: BoxDecoration(
+                  color: Colors.blue,
+                ),
+                child: Text(
+                  'Reservation App',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 24,
+                  ),
+                ),
+              ),
+              ListTile(
+                leading: Icon(Icons.book_online),
+                title: Text('My Bookings'),
+                onTap: () {
+                  Navigator.pop(context); // Close the drawer
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => BookingsScreen()),
+                  );
+                },
+              ),
+              // You can add more items here like Profile, Settings, Logout etc.
+            ],
+          ),
         ),
         body: Consumer<HomeViewModel>(
           builder: (context, viewModel, child) {

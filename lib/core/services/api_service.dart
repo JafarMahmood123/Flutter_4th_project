@@ -161,7 +161,7 @@ class ApiService {
     print(body);
 
     final response = await http.post(
-      Uri.parse('$_baseUrl/RestaurantBookings'),
+      Uri.parse('$_baseUrl/RestaurantBooking'),
       headers: {
         'Content-Type': 'application/json',
         'Authorization': 'Bearer $token',
@@ -175,6 +175,58 @@ class ApiService {
       print(
           'Booking failed with status: ${response.statusCode} and body: ${response.body}');
       throw Exception('Failed to create booking: ${response.body}');
+    }
+  }
+
+  /// Fetches all restaurant bookings for the current user.
+  Future<List<dynamic>> getUserBookings() async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token');
+    final userId = await getCustomerId();
+
+    if (token == null || userId == null) {
+      throw Exception('User is not logged in.');
+    }
+
+    final response = await http.get(
+      // Your backend has the endpoint GetRestaurantBookingsByCustomerId
+      Uri.parse('$_baseUrl/RestaurantBooking/customer/$userId'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    } else {
+      throw Exception('Failed to load bookings: ${response.statusCode}');
+    }
+  }
+
+  /// Cancels a booking by its ID.
+  Future<bool> cancelBooking(String bookingId) async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token');
+
+    if (token == null) {
+      throw Exception('User is not logged in.');
+    }
+
+    final response = await http.delete(
+      // This endpoint should match your backend's RestaurantBookingController
+      Uri.parse('$_baseUrl/RestaurantBooking/$bookingId'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+    );
+
+    // Status code 204 (No Content) is a common successful response for a DELETE request.
+    if (response.statusCode == 200 || response.statusCode == 204) {
+      return true;
+    } else {
+      throw Exception('Failed to cancel booking. Status: ${response.statusCode}');
     }
   }
 }
