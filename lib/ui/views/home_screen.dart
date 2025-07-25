@@ -1,5 +1,8 @@
+// lib/ui/screens/home_screen.dart
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:user_flutter_project/ui/views/restaurant_screen.dart';
 import '../viewmodels/home_viewmodel.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -42,50 +45,68 @@ class HomeScreen extends StatelessWidget {
                       itemCount: viewModel.restaurants.length,
                       itemBuilder: (context, index) {
                         final restaurant = viewModel.restaurants[index];
-                        return Container(
-                          width: 160, // Increased width
-                          margin: EdgeInsets.only(right: 12),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              ClipRRect(
-                                borderRadius: BorderRadius.circular(8),
-                                child: Container(
-                                  height: 120, // Increased image height
-                                  width: double.infinity,
-                                  child: Image.network(
-                                    restaurant.pictureUrl,
-                                    fit: BoxFit.cover,
-                                    errorBuilder: (context, error, stackTrace) =>
-                                        Container(
-                                          height: 120,
-                                          color: Colors.grey[200],
-                                          child: Icon(Icons.restaurant, size: 40),
-                                        ),
+                        // WRAP a portion of the code with InkWell
+                        return InkWell(
+                          // In home_screen.dart, inside the ListView.builder for restaurants:
+
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                // Pass the ID to the RestaurantScreen
+                                builder: (context) => RestaurantScreen(restaurantId: restaurant.id),
+                              ),
+                            );
+                          },
+                          child: Container(
+                            width: 160, // Increased width
+                            margin: EdgeInsets.only(right: 12),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                // WRAP Image with a Hero widget
+                                Hero(
+                                  tag: 'restaurant-image-${restaurant.id}',
+                                  child: ClipRRect(
+                                    borderRadius: BorderRadius.circular(8),
+                                    child: Container(
+                                      height: 120, // Increased image height
+                                      width: double.infinity,
+                                      child: Image.network(
+                                        restaurant.pictureUrl,
+                                        fit: BoxFit.cover,
+                                        errorBuilder: (context, error, stackTrace) =>
+                                            Container(
+                                              height: 120,
+                                              color: Colors.grey[200],
+                                              child: Icon(Icons.restaurant, size: 40),
+                                            ),
+                                      ),
+                                    ),
                                   ),
                                 ),
-                              ),
-                              SizedBox(height: 8),
-                              Text(
-                                restaurant.name,
-                                style: TextStyle(
-                                  fontWeight: FontWeight.w500,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                                maxLines: 1,
-                              ),
-                              SizedBox(height: 4),
-                              Row(
-                                children: [
-                                  Icon(Icons.star, color: Colors.amber, size: 16),
-                                  SizedBox(width: 4),
-                                  Text(
-                                    restaurant.starRating.toStringAsFixed(1),
-                                    style: TextStyle(fontSize: 12),
+                                SizedBox(height: 8),
+                                Text(
+                                  restaurant.name,
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.w500,
+                                    overflow: TextOverflow.ellipsis,
                                   ),
-                                ],
-                              ),
-                            ],
+                                  maxLines: 1,
+                                ),
+                                SizedBox(height: 4),
+                                Row(
+                                  children: [
+                                    Icon(Icons.star, color: Colors.amber, size: 16),
+                                    SizedBox(width: 4),
+                                    Text(
+                                      restaurant.starRating.toStringAsFixed(1),
+                                      style: TextStyle(fontSize: 12),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
                           ),
                         );
                       },
