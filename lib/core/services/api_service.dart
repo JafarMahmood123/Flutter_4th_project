@@ -4,7 +4,7 @@ import 'package:jwt_decoder/jwt_decoder.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ApiService {
-  final String _baseUrl = "https://45f14d8dee4a.ngrok-free.app"; // Your backend URL
+  final String _baseUrl = "https://a4d3cb21b100.ngrok-free.app"; // Your backend URL
 
   // No changes to login, getHotels, getRestaurants, getRestaurantsById, getDishesByRestaurantId
 
@@ -227,6 +227,43 @@ class ApiService {
       return true;
     } else {
       throw Exception('Failed to cancel booking. Status: ${response.statusCode}');
+    }
+  }
+
+  Future<bool> signUp({
+    required String firstName,
+    required String lastName,
+    required String email,
+    required String password,
+    required String birthDate, // Add this
+    required String locationId, // Add this
+  }) async {
+    final response = await http.post(
+      Uri.parse('$_baseUrl/User/SignUp'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({
+        'firstName': firstName,
+        'lastName': lastName,
+        'email': email,
+        'password': password,
+        'birthDate': birthDate, // Add this
+        'locationId': locationId, // Add this
+        // RoleId is nullable and likely handled by the backend, so we omit it.
+      }),
+    );
+
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      return true;
+    } else {
+      String message = 'An error occurred during sign up.';
+      if (response.body.isNotEmpty) {
+        try {
+          message = response.body;
+        } catch (e) {
+          // Ignore
+        }
+      }
+      throw Exception(message);
     }
   }
 }

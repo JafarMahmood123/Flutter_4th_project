@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:user_flutter_project/ui/views/signup_screen.dart'; // Import the new screen
 import '../viewmodels/login_viewmodel.dart';
 import 'home_screen.dart';
 
@@ -112,12 +113,20 @@ class LoginScreen extends StatelessWidget {
                 ),
                 SizedBox(height: 16),
 
-                // Forgot Password
-                TextButton(
-                  onPressed: () {
-                    // TODO: Implement forgot password functionality
-                  },
-                  child: Text('Forgot Password?'),
+                // --- ADDED SIGN UP BUTTON ---
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text("Don't have an account?"),
+                    TextButton(
+                      onPressed: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(builder: (context) => SignUpScreen()),
+                        );
+                      },
+                      child: Text('Sign Up'),
+                    ),
+                  ],
                 ),
               ],
             ),
