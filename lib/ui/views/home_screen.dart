@@ -1,7 +1,6 @@
-// lib/ui/screens/home_screen.dart
-
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:user_flutter_project/ui/views/bookings_screen.dart';
 import 'package:user_flutter_project/ui/views/restaurant_screen.dart';
 import '../viewmodels/home_viewmodel.dart';
 
@@ -15,6 +14,36 @@ class HomeScreen extends StatelessWidget {
           title: Text('Explore'),
           centerTitle: true,
           elevation: 0,
+        ),
+        drawer: Drawer(
+          child: ListView(
+            padding: EdgeInsets.zero,
+            children: <Widget>[
+              DrawerHeader(
+                decoration: BoxDecoration(
+                  color: Theme.of(context).primaryColor,
+                ),
+                child: Text(
+                  'Menu',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 24,
+                  ),
+                ),
+              ),
+              ListTile(
+                leading: Icon(Icons.book_online),
+                title: Text('Bookings'),
+                onTap: () {
+                  Navigator.pop(context); // Close the drawer
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => BookingsScreen()),
+                  );
+                },
+              ),
+            ],
+          ),
         ),
         body: Consumer<HomeViewModel>(
           builder: (context, viewModel, child) {

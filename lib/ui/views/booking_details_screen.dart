@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:user_flutter_project/data/models/Booking.dart';
 import 'package:user_flutter_project/ui/viewmodels/booking_details_viewmodel.dart';
+import 'package:user_flutter_project/ui/views/payment_screen.dart';
 
 class BookingDetailsScreen extends StatelessWidget {
   final Booking booking;
@@ -114,8 +115,11 @@ class BookingDetailsScreen extends StatelessWidget {
                                 icon: const Icon(Icons.payment),
                                 label: const Text('Pay'),
                                 onPressed: () {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(content: Text('Payment functionality is not yet implemented.')),
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => PaymentScreen(booking: booking),
+                                    ),
                                   );
                                 },
                                 style: ElevatedButton.styleFrom(

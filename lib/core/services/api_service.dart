@@ -190,7 +190,7 @@ class ApiService {
 
     final response = await http.get(
       // Your backend has the endpoint GetRestaurantBookingsByCustomerId
-      Uri.parse('$_baseUrl/RestaurantBooking/customer/$userId'),
+      Uri.parse('$_baseUrl/RestaurantBooking'),
       headers: {
         'Content-Type': 'application/json',
         'Authorization': 'Bearer $token',
@@ -264,6 +264,29 @@ class ApiService {
         }
       }
       throw Exception(message);
+    }
+  }
+
+  Future<bool> payForBooking(String bookingId, String paymentToken) async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token');
+
+    final response = await http.post(
+      Uri.parse('$_baseUrl/RestaurantBooking/pay'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+      body: jsonEncode({
+        'bookingId': bookingId,
+        'paymentToken': paymentToken,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      return true;
+    } else {
+      throw Exception('Failed to process payment');
     }
   }
 }
