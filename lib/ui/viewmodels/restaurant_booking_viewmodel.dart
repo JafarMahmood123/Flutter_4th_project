@@ -33,7 +33,7 @@ class RestaurantBookingViewModel with ChangeNotifier {
   double get totalOrderPrice {
     double total = 0.0;
     _dishQuantities.forEach((dishId, quantity) {
-      final dish = _dishes.firstWhere((d) => d.id == dishId, orElse: () => Dish(id: '', name: '', description: '', price: 0.0, imageUrl: '', restaurantId: '', currency: ''));
+      final dish = _dishes.firstWhere((d) => d.id == dishId, orElse: () => Dish(id: '', name: '', price: 0.0, description: '', imageUrl: '', restaurantId: ''));
       total += dish.price * quantity;
     });
     return total;

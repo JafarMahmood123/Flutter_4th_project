@@ -13,6 +13,7 @@ class RestaurantViewModel with ChangeNotifier {
 
   // Private state
   Restaurant? _restaurant;
+  List<Dish> _dishes = [];
 
   // Public properties for the View
   bool _isLoading = false;
@@ -34,9 +35,9 @@ class RestaurantViewModel with ChangeNotifier {
   List<Feature> get features => _restaurant?.features ?? [];
   List<Tag> get tags => _restaurant?.tags ?? [];
   List<WorkTime> get workTimes => _restaurant?.workTimes ?? [];
-  List<Dish> get dishes => _restaurant?.dishes ?? [];
+  List<Dish> get dishes => _dishes;
 
-  Restaurant? get restaurant => _restaurant; // Expose the full model for booking screen
+  Restaurant? get restaurant => _restaurant;
 
   /// Fetches all data for the restaurant and updates the state.
   Future<void> fetchRestaurantById(String id) async {
@@ -47,6 +48,10 @@ class RestaurantViewModel with ChangeNotifier {
     try {
       final restaurantData = await _apiService.getRestaurantsById(id);
       _restaurant = Restaurant.fromJson(restaurantData);
+
+      final dishesData = await _apiService.getDishesByRestaurantId(id);
+      _dishes = dishesData.map((data) => Dish.fromJson(data)).toList();
+
     } catch (e) {
       _errorMessage = "Failed to load restaurant details: ${e.toString()}";
     } finally {

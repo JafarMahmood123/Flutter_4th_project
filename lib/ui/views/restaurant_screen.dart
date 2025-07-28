@@ -96,11 +96,6 @@ class RestaurantScreen extends StatelessWidget {
                             const SizedBox(height: 16),
                             const Divider(),
                             _buildAboutSection(context, viewModel),
-                            _buildInfoSection(context, 'Cuisines', viewModel.cuisines.map((e) => e.name).toList()),
-                            _buildInfoSection(context, 'Meal Types', viewModel.mealTypes.map((e) => e.name).toList()),
-                            _buildInfoSection(context, 'Features', viewModel.features.map((e) => e.name).toList()),
-                            _buildInfoSection(context, 'Tags', viewModel.tags.map((e) => e.name).toList()),
-                            _buildWorkTimesSection(context, viewModel.workTimes),
                             _buildDishesSection(context, viewModel.dishes),
                           ],
                         ),
@@ -241,31 +236,6 @@ class RestaurantScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildWorkTimesSection(BuildContext context, List<WorkTime> workTimes) {
-    if (workTimes.isEmpty) return const SizedBox.shrink();
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Working Hours',
-          style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w600),
-        ),
-        const SizedBox(height: 12),
-        ...workTimes.map((wt) => Padding(
-          padding: const EdgeInsets.only(bottom: 8.0),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(wt?.dayOfWeek, style: Theme.of(context).textTheme.bodyLarge),
-              Text('${wt.openingTime} - ${wt.closingTime}', style: Theme.of(context).textTheme.bodyLarge),
-            ],
-          ),
-        )),
-        const SizedBox(height: 24),
-      ],
-    );
-  }
-
   Widget _buildDishesSection(BuildContext context, List<Dish> dishes) {
     if (dishes.isEmpty) return const SizedBox.shrink();
     return Column(
@@ -288,11 +258,9 @@ class RestaurantScreen extends StatelessWidget {
                     children: [
                       Text(dish.name, style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
                       const SizedBox(height: 8.0),
-                      Text(dish.description, style: Theme.of(context).textTheme.bodyMedium),
                     ],
                   ),
                 ),
-                Text('${dish.price} ${dish.currency}', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
               ],
             ),
           ),
