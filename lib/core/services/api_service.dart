@@ -4,7 +4,7 @@ import 'package:jwt_decoder/jwt_decoder.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ApiService {
-  final String _baseUrl = "https://a4d3cb21b100.ngrok-free.app"; // Your backend URL
+  final String _baseUrl = "https://ba3a471a9991.ngrok-free.app"; // Your backend URL
 
   // No changes to login, getHotels, getRestaurants, getRestaurantsById, getDishesByRestaurantId
 
@@ -235,8 +235,8 @@ class ApiService {
     required String lastName,
     required String email,
     required String password,
-    required String birthDate, // Add this
-    required String locationId, // Add this
+    required String birthDate,
+    required String locationId,
   }) async {
     final response = await http.post(
       Uri.parse('$_baseUrl/User/SignUp'),
@@ -246,8 +246,8 @@ class ApiService {
         'lastName': lastName,
         'email': email,
         'password': password,
-        'birthDate': birthDate, // Add this
-        'locationId': locationId, // Add this
+        'birthDate': birthDate,
+        'locationId': locationId,
         // RoleId is nullable and likely handled by the backend, so we omit it.
       }),
     );
@@ -287,6 +287,25 @@ class ApiService {
       return true;
     } else {
       throw Exception('Failed to process payment');
+    }
+  }
+
+  // New methods for fetching countries and cities
+  Future<List<dynamic>> getCountries() async {
+    final response = await http.get(Uri.parse('$_baseUrl/countries'));
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    } else {
+      throw Exception('Failed to load countries');
+    }
+  }
+
+  Future<List<dynamic>> getCitiesByCountry(String countryId) async {
+    final response = await http.get(Uri.parse('$_baseUrl/cities/country/$countryId/'));
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    } else {
+      throw Exception('Failed to load cities for country $countryId');
     }
   }
 }
