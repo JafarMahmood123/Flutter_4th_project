@@ -14,6 +14,7 @@ class RestaurantViewModel with ChangeNotifier {
   // Private state
   Restaurant? _restaurant;
   List<Dish> _dishes = [];
+  List<Cuisine> _cuisines = [];
 
   // Public properties for the View
   bool _isLoading = false;
@@ -51,6 +52,9 @@ class RestaurantViewModel with ChangeNotifier {
 
       final dishesData = await _apiService.getDishesByRestaurantId(id);
       _dishes = dishesData.map((data) => Dish.fromJson(data)).toList();
+
+      final cuisinesData = await _apiService.getCuisinesByRestaurant(id);
+       _cuisines = cuisinesData.map((data) => Cuisine.fromJson(data)).toList();
 
     } catch (e) {
       _errorMessage = "Failed to load restaurant details: ${e.toString()}";
