@@ -28,7 +28,7 @@ class RestaurantViewModel with ChangeNotifier {
   String get restaurantDescription => _restaurant?.description ?? '';
   String get pictureUrl => _restaurant?.pictureUrl ?? '';
   String get starRating => _restaurant?.starRating.toStringAsFixed(1) ?? '0.0';
-  String get priceLevel => _restaurant?.priceLevel.name ?? '';
+  String get priceLevel => _restaurant?.priceLevel ?? '';
   String get priceRange => '\$${_restaurant?.minPrice.toStringAsFixed(0) ?? '0'} - \$${_restaurant?.maxPrice.toStringAsFixed(0) ?? '0'}';
   String get numberOfTables => _restaurant?.numberOfTables.toString() ?? '0';
 

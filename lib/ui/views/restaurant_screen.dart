@@ -97,6 +97,7 @@ class RestaurantScreen extends StatelessWidget {
                             const Divider(),
                             _buildAboutSection(context, viewModel),
                             _buildCuisinesSection(context, viewModel),
+                            _buildMealTypesSection(context, viewModel), // Added this line
                             _buildDishesSection(context, viewModel.dishes),
                           ],
                         ),
@@ -211,6 +212,27 @@ class RestaurantScreen extends StatelessWidget {
           spacing: 8.0,
           runSpacing: 4.0,
           children: viewModel.cuisines.map((cuisine) => Chip(label: Text(cuisine.name))).toList(),
+        ),
+        const SizedBox(height: 24),
+      ],
+    );
+  }
+
+  // New widget for Meal Types
+  Widget _buildMealTypesSection(BuildContext context, RestaurantViewModel viewModel) {
+    if (viewModel.mealTypes.isEmpty) return const SizedBox.shrink();
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Meal Types',
+          style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w600),
+        ),
+        const SizedBox(height: 12),
+        Wrap(
+          spacing: 8.0,
+          runSpacing: 4.0,
+          children: viewModel.mealTypes.map((mealType) => Chip(label: Text(mealType.name))).toList(),
         ),
         const SizedBox(height: 24),
       ],

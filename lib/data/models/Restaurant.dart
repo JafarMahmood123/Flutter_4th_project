@@ -16,7 +16,7 @@ class Restaurant {
   final double latitude;
   final double longitude;
   final int numberOfTables;
-  final RestaurantPriceLevel priceLevel;
+  final String priceLevel;
   final double minPrice;
   final double maxPrice;
   final String locationId;
@@ -62,10 +62,7 @@ class Restaurant {
       latitude: (json['latitude'] ?? 0.0).toDouble(),
       longitude: (json['longitude'] ?? 0.0).toDouble(),
       numberOfTables: json['numberOfTables'] ?? 0,
-      priceLevel: RestaurantPriceLevel.values.firstWhere(
-            (e) => e.toString() == 'RestaurantPriceLevel.${json['priceLevel']}',
-        orElse: () => RestaurantPriceLevel.Moderate,
-      ),
+      priceLevel: json['priceLevel'] ?? 'NotSet',
       minPrice: (json['minPrice'] ?? 0.0).toDouble(),
       maxPrice: (json['maxPrice'] ?? 0.0).toDouble(),
       locationId: json['locationId'] ?? '',
@@ -78,11 +75,4 @@ class Restaurant {
       dishes: (json['dishes'] as List<dynamic>? ?? []).map((e) => Dish.fromJson(e)).toList(),
     );
   }
-}
-
-enum RestaurantPriceLevel {
-  Cheap,
-  Moderate,
-  Expensive,
-  Luxury,
 }
