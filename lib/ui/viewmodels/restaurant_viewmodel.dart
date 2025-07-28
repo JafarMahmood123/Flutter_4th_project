@@ -1,4 +1,7 @@
+// lib/ui/viewmodels/restaurant_viewmodel.dart
+
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:user_flutter_project/data/models/Restaurant.dart';
 import 'package:user_flutter_project/data/models/Dish.dart';
 import '../../core/services/api_service.dart';
@@ -16,6 +19,8 @@ class RestaurantViewModel with ChangeNotifier {
   List<Dish> _dishes = [];
   List<Cuisine> _cuisines = [];
   List<MealType> _mealType = [];
+  List<Tag> _tags = [];
+  List<Feature> _features = []; // Add this line
 
   // Public properties for the View
   bool _isLoading = false;
@@ -32,11 +37,10 @@ class RestaurantViewModel with ChangeNotifier {
   String get priceRange => '\$${_restaurant?.minPrice.toStringAsFixed(0) ?? '0'} - \$${_restaurant?.maxPrice.toStringAsFixed(0) ?? '0'}';
   String get numberOfTables => _restaurant?.numberOfTables.toString() ?? '0';
 
-  // This was the line causing the issue. It's now corrected.
   List<Cuisine> get cuisines => _cuisines;
   List<MealType> get mealTypes => _mealType;
-  List<Feature> get features => _restaurant?.features ?? [];
-  List<Tag> get tags => _restaurant?.tags ?? [];
+  List<Feature> get features => _features; // Update this line
+  List<Tag> get tags => _tags;
   List<WorkTime> get workTimes => _restaurant?.workTimes ?? [];
   List<Dish> get dishes => _dishes;
 
@@ -60,11 +64,32 @@ class RestaurantViewModel with ChangeNotifier {
       final mealTypesData = await _apiService.getMealTypesByRestaurant(id);
       _mealType = mealTypesData.map((data) => MealType.fromJson(data)).toList();
 
+      final tagsData = await _apiService.getTagsByRestaurant(id);
+      _tags = tagsData.map((data) => Tag.fromJson(data)).toList();
+
+      final featuresData = await _apiService.getFeaturesByRestaurant(id); // Add this line
+      _features = featuresData.map((data) => Feature.fromJson(data)).toList(); // Add this line
+
     } catch (e) {
       _errorMessage = "Failed to load restaurant details: ${e.toString()}";
     } finally {
       _isLoading = false;
       notifyListeners();
+    }
+  }
+
+  Future<void> openMap() async {
+    if (_restaurant != null) {
+      final lat = _restaurant!.latitude;
+      final lon = _restaurant!.longitude;
+
+      final url = Uri.parse('https://maps.google.com/?q=$lat,$lon');
+
+      if (await canLaunchUrl(url)) {
+        await launchUrl(url);
+      } else {
+        print('Could not launch $url');
+      }
     }
   }
 }

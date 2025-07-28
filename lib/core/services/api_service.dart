@@ -361,4 +361,42 @@ class ApiService {
       throw Exception('Failed to load cuisines for restaurant $restaurantId');
     }
   }
+
+  Future<List<dynamic>> getTagsByRestaurant(String restaurantId) async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token');
+
+    final response = await http.get(
+      Uri.parse('$_baseUrl/Restaurants/$restaurantId/tags'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    } else {
+      throw Exception('Failed to load cuisines for restaurant $restaurantId');
+    }
+  }
+
+  Future<List<dynamic>> getFeaturesByRestaurant(String restaurantId) async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token');
+
+    final response = await http.get(
+      Uri.parse('$_baseUrl/Restaurants/$restaurantId/features'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    } else {
+      throw Exception('Failed to load features for restaurant $restaurantId');
+    }
+  }
 }
