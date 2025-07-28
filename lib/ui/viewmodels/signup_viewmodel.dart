@@ -1,3 +1,5 @@
+// lib/ui/viewmodels/signup_viewmodel.dart
+
 import 'package:flutter/material.dart';
 import 'package:user_flutter_project/core/services/api_service.dart';
 
@@ -75,13 +77,21 @@ class SignUpViewModel with ChangeNotifier {
     required String email,
     required String password,
     required String birthDate,
-    required String locationId,
   }) async {
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
 
     try {
+      if (_selectedCountry == null || _selectedCity == null) {
+        throw Exception("Country and City must be selected");
+      }
+
+      final locationId = await _apiService.checkExistingLocation(
+          _selectedCountry!.id, _selectedCity!.id);
+      print("===========================================================================");
+      print(locationId);
+
       final success = await _apiService.signUp(
         firstName: firstName,
         lastName: lastName,
@@ -90,6 +100,9 @@ class SignUpViewModel with ChangeNotifier {
         birthDate: birthDate,
         locationId: locationId,
       );
+
+      print("===========================================================================");
+      print(success);
 
       _isLoading = false;
       notifyListeners();

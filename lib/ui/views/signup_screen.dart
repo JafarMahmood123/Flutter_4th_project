@@ -1,3 +1,5 @@
+// lib/ui/views/signup_screen.dart
+
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -173,9 +175,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
                             );
                             return;
                           }
-                          if (viewModel.selectedCity == null) {
+                          if (viewModel.selectedCity == null || viewModel.selectedCountry == null) {
                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Please select a city.'), backgroundColor: Colors.red),
+                              const SnackBar(content: Text('Please select a country and city.'), backgroundColor: Colors.red),
                             );
                             return;
                           }
@@ -186,7 +188,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
                             email: _emailController.text.trim(),
                             password: _passwordController.text.trim(),
                             birthDate: DateFormat('yyyy-MM-dd').format(_selectedBirthDate!),
-                            locationId: viewModel.selectedCity!.id,
                           );
 
                           if (success) {

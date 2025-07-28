@@ -1,12 +1,13 @@
+// lib/core/services/api_service.dart
+
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:jwt_decoder/jwt_decoder.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ApiService {
-  final String _baseUrl = "https://ba3a471a9991.ngrok-free.app"; // Your backend URL
+  final String _baseUrl = "https://ba3a471a9991.ngrok-free.app";
 
-  // No changes to login, getHotels, getRestaurants, getRestaurantsById, getDishesByRestaurantId
 
   Future<String?> login(String email, String password) async {
     final response = await http.post(
@@ -143,9 +144,6 @@ class ApiService {
       throw Exception('Customer ID not found. User might not be logged in.');
     }
 
-    print("===============================================================================");
-    print(receiveDateTime);
-
     final body = jsonEncode({
       'receiveDateTime': receiveDateTime,
       'bookingDurationTime': bookingDurationTime,
@@ -157,8 +155,6 @@ class ApiService {
         'dishesIdsWithQuantities': dishesIdsWithQuantities,
       },
     });
-
-    print(body);
 
     final response = await http.post(
       Uri.parse('$_baseUrl/RestaurantBooking'),
@@ -190,7 +186,7 @@ class ApiService {
 
     final response = await http.get(
       // Your backend has the endpoint GetRestaurantBookingsByCustomerId
-      Uri.parse('$_baseUrl/RestaurantBooking'),
+      Uri.parse('$_baseUrl/RestaurantBooking/customer/$userId'),
       headers: {
         'Content-Type': 'application/json',
         'Authorization': 'Bearer $token',
@@ -238,6 +234,8 @@ class ApiService {
     required String birthDate,
     required String locationId,
   }) async {
+
+    print("==================================================================================");
     final response = await http.post(
       Uri.parse('$_baseUrl/User/SignUp'),
       headers: {'Content-Type': 'application/json'},
@@ -248,9 +246,11 @@ class ApiService {
         'password': password,
         'birthDate': birthDate,
         'locationId': locationId,
-        // RoleId is nullable and likely handled by the backend, so we omit it.
       }),
     );
+
+    print("==================================================================================");
+    print(response.body);
 
     if (response.statusCode == 200 || response.statusCode == 201) {
       return true;
@@ -301,11 +301,26 @@ class ApiService {
   }
 
   Future<List<dynamic>> getCitiesByCountry(String countryId) async {
-    final response = await http.get(Uri.parse('$_baseUrl/cities/country/$countryId/'));
+    final response = await http.get(Uri.parse('$_baseUrl/cities/country/$countryId'));
     if (response.statusCode == 200) {
       return jsonDecode(response.body);
     } else {
       throw Exception('Failed to load cities for country $countryId');
+    }
+  }
+
+  Future<String> checkExistingLocation(String countryId, String cityId) async {
+    final response = await http.post(
+      Uri.parse('$_baseUrl/Location/check'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({'countryId': countryId, 'cityId': cityId }),
+    );
+    print("=================================================================================");
+    print(response.body);
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    } else {
+      throw Exception('Failed to check existing location');
     }
   }
 }
