@@ -7,9 +7,30 @@ class WorkTime {
 
   factory WorkTime.fromJson(Map<String, dynamic> json) {
     return WorkTime(
-      dayOfWeek: json['dayOfWeek'],
-      openingTime: json['openingTime'],
-      closingTime: json['closingTime'],
+      dayOfWeek: _getDayOfWeek(json['dayOfWeek']),
+      openingTime: json['openingTime'] ?? '',
+      closingTime: json['closingTime'] ?? '',
     );
+  }
+
+  static String _getDayOfWeek(int day) {
+    switch (day) {
+      case 0:
+        return 'Sunday';
+      case 1:
+        return 'Monday';
+      case 2:
+        return 'Tuesday';
+      case 3:
+        return 'Wednesday';
+      case 4:
+        return 'Thursday';
+      case 5:
+        return 'Friday';
+      case 6:
+        return 'Saturday';
+      default:
+        return 'Unknown';
+    }
   }
 }

@@ -20,9 +20,10 @@ class RestaurantViewModel with ChangeNotifier {
   List<Cuisine> _cuisines = [];
   List<MealType> _mealType = [];
   List<Tag> _tags = [];
-  List<Feature> _features = []; // Add this line
+  List<Feature> _features = [];
+  List<WorkTime> _workTimes = [];
 
-  // Public properties for the View
+
   bool _isLoading = false;
   bool get isLoading => _isLoading;
 
@@ -39,9 +40,9 @@ class RestaurantViewModel with ChangeNotifier {
 
   List<Cuisine> get cuisines => _cuisines;
   List<MealType> get mealTypes => _mealType;
-  List<Feature> get features => _features; // Update this line
+  List<Feature> get features => _features;
   List<Tag> get tags => _tags;
-  List<WorkTime> get workTimes => _restaurant?.workTimes ?? [];
+  List<WorkTime> get workTimes => _workTimes;
   List<Dish> get dishes => _dishes;
 
   Restaurant? get restaurant => _restaurant;
@@ -67,8 +68,11 @@ class RestaurantViewModel with ChangeNotifier {
       final tagsData = await _apiService.getTagsByRestaurant(id);
       _tags = tagsData.map((data) => Tag.fromJson(data)).toList();
 
-      final featuresData = await _apiService.getFeaturesByRestaurant(id); // Add this line
-      _features = featuresData.map((data) => Feature.fromJson(data)).toList(); // Add this line
+      final featuresData = await _apiService.getFeaturesByRestaurant(id);
+      _features = featuresData.map((data) => Feature.fromJson(data)).toList();
+
+      final workTimesData = await _apiService.getWorkTimesByRestaurant(id);
+      _workTimes = workTimesData.map((data) => WorkTime.fromJson(data)).toList();
 
     } catch (e) {
       _errorMessage = "Failed to load restaurant details: ${e.toString()}";

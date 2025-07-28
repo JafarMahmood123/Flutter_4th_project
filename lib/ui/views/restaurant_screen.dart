@@ -102,6 +102,7 @@ class RestaurantScreen extends StatelessWidget {
                             _buildDishesSection(context, viewModel.dishes),
                             _buildTagsSection(context, viewModel),
                             _buildFeaturesSection(context, viewModel),
+                            _buildWorkTimesSection(context, viewModel),
                           ],
                         ),
                       ),
@@ -391,6 +392,45 @@ class RestaurantScreen extends StatelessWidget {
             subtitle: Text('Lat: ${viewModel.restaurant?.latitude}, Lon: ${viewModel.restaurant?.longitude}'),
             trailing: const Icon(Icons.arrow_forward_ios, size: 16),
             onTap: viewModel.openMap,
+          ),
+        ),
+        const SizedBox(height: 24),
+      ],
+    );
+  }
+
+  Widget _buildWorkTimesSection(BuildContext context, RestaurantViewModel viewModel) {
+    if (viewModel.workTimes.isEmpty) return const SizedBox.shrink();
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Opening Hours',
+          style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w600),
+        ),
+        const SizedBox(height: 12),
+        Card(
+          elevation: 0,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+            side: BorderSide(color: Colors.grey.shade300),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              children: viewModel.workTimes.map((workTime) {
+                return Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 4.0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(workTime.dayOfWeek, style: Theme.of(context).textTheme.bodyLarge),
+                      Text('${workTime.openingTime} - ${workTime.closingTime}', style: Theme.of(context).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold)),
+                    ],
+                  ),
+                );
+              }).toList(),
+            ),
           ),
         ),
         const SizedBox(height: 24),
