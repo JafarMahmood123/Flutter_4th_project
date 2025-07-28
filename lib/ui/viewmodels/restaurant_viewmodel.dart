@@ -15,6 +15,7 @@ class RestaurantViewModel with ChangeNotifier {
   Restaurant? _restaurant;
   List<Dish> _dishes = [];
   List<Cuisine> _cuisines = [];
+  List<MealType> _mealType = [];
 
   // Public properties for the View
   bool _isLoading = false;
@@ -33,7 +34,7 @@ class RestaurantViewModel with ChangeNotifier {
 
   // This was the line causing the issue. It's now corrected.
   List<Cuisine> get cuisines => _cuisines;
-  List<MealType> get mealTypes => _restaurant?.mealTypes ?? [];
+  List<MealType> get mealTypes => _mealType;
   List<Feature> get features => _restaurant?.features ?? [];
   List<Tag> get tags => _restaurant?.tags ?? [];
   List<WorkTime> get workTimes => _restaurant?.workTimes ?? [];
@@ -41,7 +42,6 @@ class RestaurantViewModel with ChangeNotifier {
 
   Restaurant? get restaurant => _restaurant;
 
-  /// Fetches all data for the restaurant and updates the state.
   Future<void> fetchRestaurantById(String id) async {
     _isLoading = true;
     _errorMessage = null;
@@ -56,6 +56,9 @@ class RestaurantViewModel with ChangeNotifier {
 
       final cuisinesData = await _apiService.getCuisinesByRestaurant(id);
       _cuisines = cuisinesData.map((data) => Cuisine.fromJson(data)).toList();
+
+      final mealTypesData = await _apiService.getMealTypesByRestaurant(id);
+      _mealType = mealTypesData.map((data) => MealType.fromJson(data)).toList();
 
     } catch (e) {
       _errorMessage = "Failed to load restaurant details: ${e.toString()}";
