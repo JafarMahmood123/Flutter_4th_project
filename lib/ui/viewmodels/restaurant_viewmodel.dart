@@ -1,43 +1,55 @@
-// lib/ui/viewmodels/restaurant_viewmodel.dart
-
 import 'package:flutter/material.dart';
 import 'package:user_flutter_project/data/models/Restaurant.dart';
+import 'package:user_flutter_project/data/models/Dish.dart';
 import '../../core/services/api_service.dart';
+import '../../data/models/Cuisine.dart';
+import '../../data/models/Feature.dart';
+import '../../data/models/MealType.dart';
+import '../../data/models/Tag.dart';
+import '../../data/models/WorkTime.dart';
 
 class RestaurantViewModel with ChangeNotifier {
   final ApiService _apiService = ApiService();
 
-  // The restaurant data, nullable to represent the "not loaded" state.
+  // Private state
   Restaurant? _restaurant;
-  Restaurant? get restaurant => _restaurant;
 
-  // State management properties
+  // Public properties for the View
   bool _isLoading = false;
   bool get isLoading => _isLoading;
 
   String? _errorMessage;
   String? get errorMessage => _errorMessage;
 
-  /// Fetches a single restaurant from the API using its unique ID.
-  ///
-  /// Notifies listeners before and after the API call to update the UI
-  /// with loading, error, or success states.
+  String get restaurantName => _restaurant?.name ?? 'Loading...';
+  String get restaurantDescription => _restaurant?.description ?? '';
+  String get pictureUrl => _restaurant?.pictureUrl ?? '';
+  String get starRating => _restaurant?.starRating.toStringAsFixed(1) ?? '0.0';
+  String get priceLevel => _restaurant?.priceLevel.name ?? '';
+  String get priceRange => '\$${_restaurant?.minPrice.toStringAsFixed(0) ?? '0'} - \$${_restaurant?.maxPrice.toStringAsFixed(0) ?? '0'}';
+  String get numberOfTables => _restaurant?.numberOfTables.toString() ?? '0';
+
+  List<Cuisine> get cuisines => _restaurant?.cuisines ?? [];
+  List<MealType> get mealTypes => _restaurant?.mealTypes ?? [];
+  List<Feature> get features => _restaurant?.features ?? [];
+  List<Tag> get tags => _restaurant?.tags ?? [];
+  List<WorkTime> get workTimes => _restaurant?.workTimes ?? [];
+  List<Dish> get dishes => _restaurant?.dishes ?? [];
+
+  Restaurant? get restaurant => _restaurant; // Expose the full model for booking screen
+
+  /// Fetches all data for the restaurant and updates the state.
   Future<void> fetchRestaurantById(String id) async {
     _isLoading = true;
     _errorMessage = null;
-    notifyListeners(); // Notify UI to show loading indicator
+    notifyListeners();
 
     try {
-      // Await the API call to get the raw restaurant data.
       final restaurantData = await _apiService.getRestaurantsById(id);
-      // Parse the JSON data into a Restaurant model object.
       _restaurant = Restaurant.fromJson(restaurantData);
     } catch (e) {
-      // If an error occurs, store the error message.
       _errorMessage = "Failed to load restaurant details: ${e.toString()}";
-      print(_errorMessage);
     } finally {
-      // Ensure loading is set to false and notify the UI to update.
       _isLoading = false;
       notifyListeners();
     }

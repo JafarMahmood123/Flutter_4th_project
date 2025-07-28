@@ -1,3 +1,5 @@
+// lib/data/models/Dish.dart
+
 class Dish {
   final String id;
   final String name;
@@ -5,6 +7,7 @@ class Dish {
   final double price;
   final String imageUrl;
   final String restaurantId;
+  final String currency; // Added currency
 
   Dish({
     required this.id,
@@ -13,6 +16,7 @@ class Dish {
     required this.price,
     required this.imageUrl,
     required this.restaurantId,
+    required this.currency, // Added currency
   });
 
   factory Dish.fromJson(Map<String, dynamic> json) {
@@ -23,6 +27,7 @@ class Dish {
       price: (json['price'] ?? 0.0).toDouble(),
       imageUrl: json['imageUrl'] ?? '',
       restaurantId: json['restaurantId'] ?? '',
+      currency: json['currency'] ?? 'USD', // Added currency
     );
   }
 }

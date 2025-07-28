@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:user_flutter_project/data/models/Dish.dart';
 import 'package:user_flutter_project/ui/viewmodels/restaurant_viewmodel.dart';
 import 'package:user_flutter_project/ui/views/restaurant_booking_screen.dart';
 
@@ -16,12 +17,10 @@ class RestaurantScreen extends StatelessWidget {
         backgroundColor: Colors.grey[200],
         body: Consumer<RestaurantViewModel>(
           builder: (context, viewModel, child) {
-            // Loading State
             if (viewModel.isLoading) {
               return const Center(child: CircularProgressIndicator());
             }
 
-            // Error State
             if (viewModel.errorMessage != null) {
               return Center(
                 child: Padding(
@@ -31,29 +30,22 @@ class RestaurantScreen extends StatelessWidget {
               );
             }
 
-            // No Data State
-            if (viewModel.restaurant == null) {
-              return const Center(child: Text('Restaurant details not found.'));
-            }
-
-            // --- Success State: Revamped UI Starts Here ---
-            final restaurant = viewModel.restaurant!;
             return Stack(
               children: [
-                // Background Hero Image
-                Hero(
-                  tag: 'restaurant-image-${restaurant.id}',
-                  child: Container(
-                    height: MediaQuery.of(context).size.height * 0.45,
-                    decoration: BoxDecoration(
-                      image: DecorationImage(
-                        image: NetworkImage(restaurant.pictureUrl),
-                        fit: BoxFit.cover,
-                        onError: (exception, stackTrace) => print("Image load error"),
+                // Background Image
+                if (viewModel.pictureUrl.isNotEmpty)
+                  Hero(
+                    tag: 'restaurant-image-${restaurantId}',
+                    child: Container(
+                      height: MediaQuery.of(context).size.height * 0.45,
+                      decoration: BoxDecoration(
+                        image: DecorationImage(
+                          image: NetworkImage(viewModel.pictureUrl),
+                          fit: BoxFit.cover,
+                        ),
                       ),
                     ),
                   ),
-                ),
 
                 // Back Button
                 Positioned(
@@ -96,60 +88,20 @@ class RestaurantScreen extends StatelessWidget {
                         ),
                         child: ListView(
                           controller: scrollController,
-                          padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
+                          padding: const EdgeInsets.fromLTRB(20, 20, 20, 100), // Padding for button
                           children: [
-                            // Header: Name and Rating
-                            Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Expanded(
-                                  child: Text(
-                                    restaurant.name,
-                                    style: Theme.of(context).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold),
-                                  ),
-                                ),
-                                const SizedBox(width: 16),
-                                Row(
-                                  children: [
-                                    const Icon(Icons.star, color: Colors.amber, size: 24),
-                                    const SizedBox(width: 8),
-                                    Text(
-                                      restaurant.starRating.toStringAsFixed(1),
-                                      style: Theme.of(context).textTheme.titleLarge,
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
+                            _buildHeader(context, viewModel),
                             const SizedBox(height: 24),
-
-                            // Info Cards Section
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceAround,
-                              children: [
-                                _buildInfoCard(context, Icons.price_check, 'Price Level', restaurant.priceLevel.name),
-                                _buildInfoCard(context, Icons.attach_money, 'Price Range', '\$${restaurant.minPrice.toStringAsFixed(0)} - \$${restaurant.maxPrice.toStringAsFixed(0)}'),
-                                _buildInfoCard(context, Icons.table_restaurant, 'Tables', restaurant.numberOfTables.toString()),
-                              ],
-                            ),
-                            const SizedBox(height: 24),
-                            const Divider(),
+                            _buildInfoCards(context, viewModel),
                             const SizedBox(height: 16),
-
-                            // About Section
-                            Text(
-                              'About ${restaurant.name}',
-                              style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w600),
-                            ),
-                            const SizedBox(height: 12),
-                            Text(
-                              restaurant.description,
-                              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                                color: Colors.black54,
-                                height: 1.5,
-                              ),
-                            ),
-                            const SizedBox(height: 120), // Extra space for CTA button
+                            const Divider(),
+                            _buildAboutSection(context, viewModel),
+                            _buildInfoSection(context, 'Cuisines', viewModel.cuisines.map((e) => e.name).toList()),
+                            _buildInfoSection(context, 'Meal Types', viewModel.mealTypes.map((e) => e.name).toList()),
+                            _buildInfoSection(context, 'Features', viewModel.features.map((e) => e.name).toList()),
+                            _buildInfoSection(context, 'Tags', viewModel.tags.map((e) => e.name).toList()),
+                            _buildWorkTimesSection(context, viewModel.workTimes),
+                            _buildDishesSection(context, viewModel.dishes),
                           ],
                         ),
                       ),
@@ -157,30 +109,31 @@ class RestaurantScreen extends StatelessWidget {
                   },
                 ),
 
-                // Floating Action Button for Reservations
-                Positioned(
-                  bottom: 20,
-                  left: 20,
-                  right: 20,
-                  child: ElevatedButton.icon(
-                    onPressed: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (context) => RestaurantBookingScreen(restaurant: restaurant),
+                // Booking Button
+                if (viewModel.restaurant != null)
+                  Positioned(
+                    bottom: 20,
+                    left: 20,
+                    right: 20,
+                    child: ElevatedButton.icon(
+                      onPressed: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (context) => RestaurantBookingScreen(restaurant: viewModel.restaurant!),
+                          ),
+                        );
+                      },
+                      icon: const Icon(Icons.calendar_today),
+                      label: const Text('Book a Table'),
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
                         ),
-                      );
-                    },
-                    icon: const Icon(Icons.calendar_today),
-                    label: const Text('Book a Table'),
-                    style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                        textStyle: Theme.of(context).textTheme.titleMedium?.copyWith(color: Colors.white),
                       ),
-                      textStyle: Theme.of(context).textTheme.titleMedium?.copyWith(color: Colors.white),
                     ),
                   ),
-                ),
               ],
             );
           },
@@ -189,7 +142,65 @@ class RestaurantScreen extends StatelessWidget {
     );
   }
 
-  /// Helper widget to create styled info cards for key details.
+  // --- UI Helper Widgets ---
+
+  Widget _buildHeader(BuildContext context, RestaurantViewModel viewModel) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Expanded(
+          child: Text(
+            viewModel.restaurantName,
+            style: Theme.of(context).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold),
+          ),
+        ),
+        const SizedBox(width: 16),
+        Row(
+          children: [
+            const Icon(Icons.star, color: Colors.amber, size: 24),
+            const SizedBox(width: 8),
+            Text(
+              viewModel.starRating,
+              style: Theme.of(context).textTheme.titleLarge,
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildInfoCards(BuildContext context, RestaurantViewModel viewModel) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceAround,
+      children: [
+        _buildInfoCard(context, Icons.price_check, 'Price Level', viewModel.priceLevel),
+        _buildInfoCard(context, Icons.attach_money, 'Price Range', viewModel.priceRange),
+        _buildInfoCard(context, Icons.table_restaurant, 'Tables', viewModel.numberOfTables),
+      ],
+    );
+  }
+
+  Widget _buildAboutSection(BuildContext context, RestaurantViewModel viewModel) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'About ${viewModel.restaurantName}',
+          style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w600),
+        ),
+        const SizedBox(height: 12),
+        Text(
+          viewModel.restaurantDescription,
+          style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+            color: Colors.black54,
+            height: 1.5,
+          ),
+        ),
+        const SizedBox(height: 24),
+      ],
+    );
+  }
+
   Widget _buildInfoCard(BuildContext context, IconData icon, String title, String value) {
     return Expanded(
       child: Column(
@@ -207,6 +218,86 @@ class RestaurantScreen extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildInfoSection(BuildContext context, String title, List<String> items) {
+    if (items.isEmpty) return const SizedBox.shrink();
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          title,
+          style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w600),
+        ),
+        const SizedBox(height: 12),
+        Wrap(
+          spacing: 8.0,
+          runSpacing: 4.0,
+          children: items.map((item) => Chip(label: Text(item))).toList(),
+        ),
+        const SizedBox(height: 24),
+      ],
+    );
+  }
+
+  Widget _buildWorkTimesSection(BuildContext context, List<WorkTime> workTimes) {
+    if (workTimes.isEmpty) return const SizedBox.shrink();
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Working Hours',
+          style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w600),
+        ),
+        const SizedBox(height: 12),
+        ...workTimes.map((wt) => Padding(
+          padding: const EdgeInsets.only(bottom: 8.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(wt?.dayOfWeek, style: Theme.of(context).textTheme.bodyLarge),
+              Text('${wt.openingTime} - ${wt.closingTime}', style: Theme.of(context).textTheme.bodyLarge),
+            ],
+          ),
+        )),
+        const SizedBox(height: 24),
+      ],
+    );
+  }
+
+  Widget _buildDishesSection(BuildContext context, List<Dish> dishes) {
+    if (dishes.isEmpty) return const SizedBox.shrink();
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Menu',
+          style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w600),
+        ),
+        const SizedBox(height: 12),
+        ...dishes.map((dish) => Card(
+          margin: const EdgeInsets.only(bottom: 16.0),
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(dish.name, style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+                      const SizedBox(height: 8.0),
+                      Text(dish.description, style: Theme.of(context).textTheme.bodyMedium),
+                    ],
+                  ),
+                ),
+                Text('${dish.price} ${dish.currency}', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+              ],
+            ),
+          ),
+        )),
+      ],
     );
   }
 }
