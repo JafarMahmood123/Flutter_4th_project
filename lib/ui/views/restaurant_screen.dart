@@ -96,6 +96,7 @@ class RestaurantScreen extends StatelessWidget {
                             const SizedBox(height: 16),
                             const Divider(),
                             _buildAboutSection(context, viewModel),
+                            _buildCuisinesSection(context, viewModel),
                             _buildDishesSection(context, viewModel.dishes),
                           ],
                         ),
@@ -190,6 +191,26 @@ class RestaurantScreen extends StatelessWidget {
             color: Colors.black54,
             height: 1.5,
           ),
+        ),
+        const SizedBox(height: 24),
+      ],
+    );
+  }
+
+  Widget _buildCuisinesSection(BuildContext context, RestaurantViewModel viewModel) {
+    if (viewModel.cuisines.isEmpty) return const SizedBox.shrink();
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Cuisines',
+          style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w600),
+        ),
+        const SizedBox(height: 12),
+        Wrap(
+          spacing: 8.0,
+          runSpacing: 4.0,
+          children: viewModel.cuisines.map((cuisine) => Chip(label: Text(cuisine.name))).toList(),
         ),
         const SizedBox(height: 24),
       ],

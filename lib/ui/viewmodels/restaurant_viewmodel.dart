@@ -31,7 +31,8 @@ class RestaurantViewModel with ChangeNotifier {
   String get priceRange => '\$${_restaurant?.minPrice.toStringAsFixed(0) ?? '0'} - \$${_restaurant?.maxPrice.toStringAsFixed(0) ?? '0'}';
   String get numberOfTables => _restaurant?.numberOfTables.toString() ?? '0';
 
-  List<Cuisine> get cuisines => _restaurant?.cuisines ?? [];
+  // This was the line causing the issue. It's now corrected.
+  List<Cuisine> get cuisines => _cuisines;
   List<MealType> get mealTypes => _restaurant?.mealTypes ?? [];
   List<Feature> get features => _restaurant?.features ?? [];
   List<Tag> get tags => _restaurant?.tags ?? [];
@@ -54,7 +55,7 @@ class RestaurantViewModel with ChangeNotifier {
       _dishes = dishesData.map((data) => Dish.fromJson(data)).toList();
 
       final cuisinesData = await _apiService.getCuisinesByRestaurant(id);
-       _cuisines = cuisinesData.map((data) => Cuisine.fromJson(data)).toList();
+      _cuisines = cuisinesData.map((data) => Cuisine.fromJson(data)).toList();
 
     } catch (e) {
       _errorMessage = "Failed to load restaurant details: ${e.toString()}";
