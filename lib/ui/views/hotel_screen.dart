@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:user_flutter_project/ui/viewmodels/hotel_viewmodel.dart';
+import 'package:user_flutter_project/ui/views/hotel_reservation_screen.dart';
 
 class HotelScreen extends StatelessWidget {
   final String hotelId;
@@ -81,6 +82,7 @@ class HotelScreen extends StatelessWidget {
                       ),
                       child: ListView(
                         controller: scrollController,
+                        padding: const EdgeInsets.only(bottom: 80), // Add padding for the button
                         children: [
                           Padding(
                             padding: const EdgeInsets.all(20.0),
@@ -164,6 +166,29 @@ class HotelScreen extends StatelessWidget {
                       ),
                     );
                   },
+                ),
+                Positioned(
+                  bottom: 20,
+                  left: 20,
+                  right: 20,
+                  child: ElevatedButton.icon(
+                    onPressed: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (context) => HotelReservationScreen(hotel: hotel),
+                        ),
+                      );
+                    },
+                    icon: const Icon(Icons.calendar_today),
+                    label: const Text('Reserve'),
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      textStyle: Theme.of(context).textTheme.titleMedium?.copyWith(color: Colors.white),
+                    ),
+                  ),
                 ),
               ],
             );

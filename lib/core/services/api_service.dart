@@ -5,8 +5,10 @@ import 'package:http/http.dart' as http;
 import 'package:jwt_decoder/jwt_decoder.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../data/models/HotelReservation.dart';
+
 class ApiService {
-  final String _baseUrl = "https://6a150b2d10d1.ngrok-free.app";
+  final String _baseUrl = "https://4cbc67acfd8f.ngrok-free.app";
 
 
   Future<String?> login(String email, String password) async {
@@ -60,6 +62,24 @@ class ApiService {
       return jsonDecode(response.body);
     } else {
       throw Exception('Failed to load hotel');
+    }
+  }
+
+  Future<List<dynamic>> getRoomsByHotelId(String hotelId) async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token');
+    final response = await http.get(
+      Uri.parse('$_baseUrl/Hotels/$hotelId/rooms'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    } else {
+      throw Exception('Failed to load rooms for hotel with Id: $hotelId');
     }
   }
 
@@ -485,6 +505,25 @@ class ApiService {
       return jsonDecode(response.body);
     } else {
       throw Exception('Failed to load Amenities for hotel with Id: $hotelId');
+    }
+  }
+
+  Future<bool> createHotelBooking(HotelReservation reservation) async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token');
+    final response = await http.post(
+      Uri.parse('$_baseUrl/HotelBooking'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+      body: jsonEncode(reservation.toJson()),
+    );
+
+    if (response.statusCode == 201 || response.statusCode == 200) {
+      return true;
+    } else {
+      throw Exception('Failed to create hotel booking');
     }
   }
 }
