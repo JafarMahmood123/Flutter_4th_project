@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:user_flutter_project/ui/views/bookings_screen.dart';
+import 'package:user_flutter_project/ui/views/hotel_screen.dart';
 import 'package:user_flutter_project/ui/views/restaurant_screen.dart';
 import '../viewmodels/home_viewmodel.dart';
 
@@ -162,50 +163,63 @@ class HomeScreen extends StatelessWidget {
                       itemCount: viewModel.hotels.length,
                       itemBuilder: (context, index) {
                         final hotel = viewModel.hotels[index];
-                        return Container(
-                          width: 160, // Increased width
-                          margin: EdgeInsets.only(right: 12),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              ClipRRect(
-                                borderRadius: BorderRadius.circular(8),
-                                child: Container(
-                                  height: 120, // Increased image height
-                                  width: double.infinity,
-                                  child: Image.network(
-                                    hotel.pictureUrl,
-                                    fit: BoxFit.cover,
-                                    errorBuilder: (context, error, stackTrace) =>
-                                        Container(
-                                          height: 120,
-                                          color: Colors.grey[200],
-                                          child: Icon(Icons.hotel, size: 40),
-                                        ),
+                        return InkWell(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => HotelScreen(hotelId: hotel.id),
+                              ),
+                            );
+                          },
+                          child: Container(
+                            width: 160, // Increased width
+                            margin: EdgeInsets.only(right: 12),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Hero(
+                                  tag: 'hotel-image-${hotel.id}',
+                                  child: ClipRRect(
+                                    borderRadius: BorderRadius.circular(8),
+                                    child: Container(
+                                      height: 120, // Increased image height
+                                      width: double.infinity,
+                                      child: Image.network(
+                                        hotel.pictureUrl,
+                                        fit: BoxFit.cover,
+                                        errorBuilder: (context, error, stackTrace) =>
+                                            Container(
+                                              height: 120,
+                                              color: Colors.grey[200],
+                                              child: Icon(Icons.hotel, size: 40),
+                                            ),
+                                      ),
+                                    ),
                                   ),
                                 ),
-                              ),
-                              SizedBox(height: 8),
-                              Text(
-                                hotel.name,
-                                style: TextStyle(
-                                  fontWeight: FontWeight.w500,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                                maxLines: 1,
-                              ),
-                              SizedBox(height: 4),
-                              Row(
-                                children: [
-                                  Icon(Icons.star, color: Colors.amber, size: 16),
-                                  SizedBox(width: 4),
-                                  Text(
-                                    hotel.starRate.toStringAsFixed(1),
-                                    style: TextStyle(fontSize: 12),
+                                SizedBox(height: 8),
+                                Text(
+                                  hotel.name,
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.w500,
+                                    overflow: TextOverflow.ellipsis,
                                   ),
-                                ],
-                              ),
-                            ],
+                                  maxLines: 1,
+                                ),
+                                SizedBox(height: 4),
+                                Row(
+                                  children: [
+                                    Icon(Icons.star, color: Colors.amber, size: 16),
+                                    SizedBox(width: 4),
+                                    Text(
+                                      hotel.starRate.toStringAsFixed(1),
+                                      style: TextStyle(fontSize: 12),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
                           ),
                         );
                       },

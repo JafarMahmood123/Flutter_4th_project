@@ -44,6 +44,25 @@ class ApiService {
     }
   }
 
+  Future<dynamic> getHotelById(String id) async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token');
+
+    final response = await http.get(
+      Uri.parse('$_baseUrl/Hotels/$id'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    } else {
+      throw Exception('Failed to load hotel');
+    }
+  }
+
   Future<List<dynamic>> getRestaurants() async {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('token');
@@ -235,7 +254,6 @@ class ApiService {
     required String locationId,
   }) async {
 
-    print("==================================================================================");
     final response = await http.post(
       Uri.parse('$_baseUrl/User/SignUp'),
       headers: {'Content-Type': 'application/json'},
@@ -249,9 +267,6 @@ class ApiService {
       }),
     );
 
-    print("==================================================================================");
-    print(response.body);
-
     if (response.statusCode == 200 || response.statusCode == 201) {
       return true;
     } else {
@@ -260,7 +275,6 @@ class ApiService {
         try {
           message = response.body;
         } catch (e) {
-          // Ignore
         }
       }
       throw Exception(message);
@@ -315,8 +329,6 @@ class ApiService {
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({'countryId': countryId, 'cityId': cityId }),
     );
-    print("=================================================================================");
-    print(response.body);
     if (response.statusCode == 200) {
       return jsonDecode(response.body);
     } else {
@@ -430,9 +442,6 @@ class ApiService {
         'Authorization': 'Bearer $token',
       },
     );
-
-    print("********************************************************************************");
-    print(response.body);
 
     if (response.statusCode == 200) {
       return jsonDecode(response.body);

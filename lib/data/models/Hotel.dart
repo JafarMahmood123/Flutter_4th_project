@@ -8,10 +8,22 @@ class Hotel {
   final double starRate;
   final int numberOfRooms;
   final String pictureUrl;
+  final double minPrice;
+  final double maxPrice;
 
-  Hotel({required this.id, required this.name, required this.description,
-    required this.latitude, required this.longitude, required this.url,
-    required this.starRate, required this.numberOfRooms, required this.pictureUrl});
+  Hotel({
+    required this.id,
+    required this.name,
+    required this.description,
+    required this.latitude,
+    required this.longitude,
+    required this.url,
+    required this.starRate,
+    required this.numberOfRooms,
+    required this.pictureUrl,
+    required this.minPrice,
+    required this.maxPrice,
+  });
 
   factory Hotel.fromJson(Map<String, dynamic> json) {
     return Hotel(
@@ -24,6 +36,8 @@ class Hotel {
       starRate: (json['starRate'] ?? 0.0).toDouble(),
       numberOfRooms: int.tryParse(json['numberOfRooms']?.toString() ?? '') ?? 0,
       pictureUrl: json['pictureUrl'] ?? '',
+      minPrice: (json['minPrice'] ?? 0.0).toDouble(),
+      maxPrice: (json['maxPrice'] ?? 0.0).toDouble(),
     );
   }
 }
