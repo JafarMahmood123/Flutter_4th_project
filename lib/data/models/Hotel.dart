@@ -10,6 +10,7 @@ class Hotel {
   final String pictureUrl;
   final double minPrice;
   final double maxPrice;
+  final String propertyId;
 
   Hotel({
     required this.id,
@@ -23,6 +24,7 @@ class Hotel {
     required this.pictureUrl,
     required this.minPrice,
     required this.maxPrice,
+    required this.propertyId,
   });
 
   factory Hotel.fromJson(Map<String, dynamic> json) {
@@ -38,6 +40,7 @@ class Hotel {
       pictureUrl: json['pictureUrl'] ?? '',
       minPrice: (json['minPrice'] ?? 0.0).toDouble(),
       maxPrice: (json['maxPrice'] ?? 0.0).toDouble(),
+      propertyId: json['propertyTypeId'] ?? '',
     );
   }
 }

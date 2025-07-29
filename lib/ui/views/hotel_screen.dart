@@ -118,6 +118,15 @@ class HotelScreen extends StatelessWidget {
                                       viewModel.priceRange,
                                       style: Theme.of(context).textTheme.titleMedium,
                                     ),
+                                    const SizedBox(width: 24),
+                                    if (viewModel.propertyType != null) ...[
+                                      Icon(Icons.business, color: Theme.of(context).primaryColor, size: 20),
+                                      const SizedBox(width: 8),
+                                      Text(
+                                        viewModel.propertyType!.name,
+                                        style: Theme.of(context).textTheme.titleMedium,
+                                      ),
+                                    ]
                                   ],
                                 ),
                                 const SizedBox(height: 24),
@@ -135,6 +144,19 @@ class HotelScreen extends StatelessWidget {
                                     height: 1.5,
                                   ),
                                 ),
+                                const SizedBox(height: 24),
+                                if (viewModel.amenities.isNotEmpty) ...[
+                                  Text(
+                                    'Amenities',
+                                    style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w600),
+                                  ),
+                                  const SizedBox(height: 12),
+                                  Wrap(
+                                    spacing: 8.0,
+                                    runSpacing: 4.0,
+                                    children: viewModel.amenities.map((amenity) => Chip(label: Text(amenity.name))).toList(),
+                                  ),
+                                ],
                               ],
                             ),
                           ),
