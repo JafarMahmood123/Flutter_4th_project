@@ -3,7 +3,6 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:user_flutter_project/data/models/Booking.dart';
 import 'package:user_flutter_project/ui/viewmodels/booking_details_viewmodel.dart';
-import 'package:user_flutter_project/ui/views/payment_screen.dart';
 
 class BookingDetailsScreen extends StatelessWidget {
   final Booking booking;
@@ -94,41 +93,19 @@ class BookingDetailsScreen extends StatelessWidget {
                       builder: (context, viewModel, child) {
                         return viewModel.isLoading
                             ? const Center(child: CircularProgressIndicator())
-                            : Row(
-                          children: [
-                            Expanded(
-                              child: OutlinedButton.icon(
-                                icon: const Icon(Icons.cancel_outlined),
-                                label: const Text('Cancel'),
-                                onPressed: () => _showCancelConfirmation(context, viewModel),
-                                style: OutlinedButton.styleFrom(
-                                  foregroundColor: Colors.red.shade700,
-                                  side: BorderSide(color: Colors.red.shade700),
-                                  padding: const EdgeInsets.symmetric(vertical: 14),
-                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                                ),
-                              ),
+                            : SizedBox(
+                          width: double.infinity,
+                          child: OutlinedButton.icon(
+                            icon: const Icon(Icons.cancel_outlined),
+                            label: const Text('Cancel'),
+                            onPressed: () => _showCancelConfirmation(context, viewModel),
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: Colors.red.shade700,
+                              side: BorderSide(color: Colors.red.shade700),
+                              padding: const EdgeInsets.symmetric(vertical: 14),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                             ),
-                            const SizedBox(width: 16),
-                            Expanded(
-                              child: ElevatedButton.icon(
-                                icon: const Icon(Icons.payment),
-                                label: const Text('Pay'),
-                                onPressed: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => PaymentScreen(booking: booking),
-                                    ),
-                                  );
-                                },
-                                style: ElevatedButton.styleFrom(
-                                  padding: const EdgeInsets.symmetric(vertical: 14),
-                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                                ),
-                              ),
-                            ),
-                          ],
+                          ),
                         );
                       },
                     ),

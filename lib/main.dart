@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:user_flutter_project/ui/viewmodels/payment_viewmodel.dart';
 import 'ui/viewmodels/login_viewmodel.dart';
 import 'ui/views/login_screen.dart';
 import 'ui/views/home_screen.dart';
@@ -23,8 +22,6 @@ class MyApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => LoginViewModel()),
-        ChangeNotifierProvider(create: (_) => PaymentViewModel()),
-        // Add other view models here as needed
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
