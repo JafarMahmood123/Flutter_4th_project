@@ -1,5 +1,3 @@
-// lib/ui/viewmodels/restaurant_viewmodel.dart
-
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:user_flutter_project/data/models/Restaurant.dart';
@@ -8,6 +6,7 @@ import '../../core/services/api_service.dart';
 import '../../data/models/Cuisine.dart';
 import '../../data/models/Feature.dart';
 import '../../data/models/MealType.dart';
+import '../../data/models/Review.dart';
 import '../../data/models/Tag.dart';
 import '../../data/models/WorkTime.dart';
 
@@ -22,7 +21,11 @@ class RestaurantViewModel with ChangeNotifier {
   List<Tag> _tags = [];
   List<Feature> _features = [];
   List<WorkTime> _workTimes = [];
+  List<Review> _reviews = [];
 
+
+  bool _isReviewsLoading = false;
+  bool get isReviewsLoading => _isReviewsLoading;
 
   bool _isLoading = false;
   bool get isLoading => _isLoading;
@@ -44,6 +47,7 @@ class RestaurantViewModel with ChangeNotifier {
   List<Tag> get tags => _tags;
   List<WorkTime> get workTimes => _workTimes;
   List<Dish> get dishes => _dishes;
+  List<Review> get reviews => _reviews;
 
   Restaurant? get restaurant => _restaurant;
 
@@ -94,6 +98,21 @@ class RestaurantViewModel with ChangeNotifier {
       } else {
         print('Could not launch $url');
       }
+    }
+  }
+
+  Future<void> fetchReviews(String restaurantId) async {
+    _isReviewsLoading = true;
+    notifyListeners();
+
+    try {
+      final reviewsData = await _apiService.getReviewsByRestaurant(restaurantId);
+      _reviews = reviewsData.map((data) => Review.fromJson(data)).toList();
+    } catch (e) {
+      _errorMessage = "Failed to load reviews: ${e.toString()}";
+    } finally {
+      _isReviewsLoading = false;
+      notifyListeners();
     }
   }
 }

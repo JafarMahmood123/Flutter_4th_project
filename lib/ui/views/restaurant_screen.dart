@@ -1,18 +1,41 @@
+// lib/ui/views/restaurant_screen.dart
+
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:user_flutter_project/data/models/Dish.dart';
+import 'package:user_flutter_project/data/models/Review.dart';
 import 'package:user_flutter_project/ui/viewmodels/restaurant_viewmodel.dart';
 import 'package:user_flutter_project/ui/views/restaurant_booking_screen.dart';
 
-class RestaurantScreen extends StatelessWidget {
+class RestaurantScreen extends StatefulWidget {
   final String restaurantId;
 
   const RestaurantScreen({Key? key, required this.restaurantId}) : super(key: key);
 
   @override
+  _RestaurantScreenState createState() => _RestaurantScreenState();
+}
+
+class _RestaurantScreenState extends State<RestaurantScreen> with SingleTickerProviderStateMixin {
+  late TabController _tabController;
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 2, vsync: this);
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
-      create: (context) => RestaurantViewModel()..fetchRestaurantById(restaurantId),
+      create: (context) => RestaurantViewModel()..fetchRestaurantById(widget.restaurantId),
       child: Scaffold(
         backgroundColor: Colors.grey[200],
         body: Consumer<RestaurantViewModel>(
@@ -21,7 +44,7 @@ class RestaurantScreen extends StatelessWidget {
               return const Center(child: CircularProgressIndicator());
             }
 
-            if (viewModel.errorMessage != null) {
+            if (viewModel.errorMessage != null && viewModel.restaurant == null) {
               return Center(
                 child: Padding(
                   padding: const EdgeInsets.all(16.0),
@@ -32,10 +55,9 @@ class RestaurantScreen extends StatelessWidget {
 
             return Stack(
               children: [
-                // Background Image
                 if (viewModel.pictureUrl.isNotEmpty)
                   Hero(
-                    tag: 'restaurant-image-${restaurantId}',
+                    tag: 'restaurant-image-${widget.restaurantId}',
                     child: Container(
                       height: MediaQuery.of(context).size.height * 0.45,
                       decoration: BoxDecoration(
@@ -47,7 +69,6 @@ class RestaurantScreen extends StatelessWidget {
                     ),
                   ),
 
-                // Back Button
                 Positioned(
                   top: 40,
                   left: 10,
@@ -60,7 +81,6 @@ class RestaurantScreen extends StatelessWidget {
                   ),
                 ),
 
-                // Draggable Content Sheet
                 DraggableScrollableSheet(
                   initialChildSize: 0.6,
                   minChildSize: 0.6,
@@ -81,36 +101,40 @@ class RestaurantScreen extends StatelessWidget {
                           ),
                         ],
                       ),
-                      child: ClipRRect(
-                        borderRadius: const BorderRadius.only(
-                          topLeft: Radius.circular(24.0),
-                          topRight: Radius.circular(24.0),
-                        ),
-                        child: ListView(
-                          controller: scrollController,
-                          padding: const EdgeInsets.fromLTRB(20, 20, 20, 100), // Padding for button
-                          children: [
-                            _buildHeader(context, viewModel),
-                            const SizedBox(height: 24),
-                            _buildInfoCards(context, viewModel),
-                            const SizedBox(height: 16),
-                            const Divider(),
-                            _buildAboutSection(context, viewModel),
-                            _buildLocationSection(context, viewModel),
-                            _buildCuisinesSection(context, viewModel),
-                            _buildMealTypesSection(context, viewModel),
-                            _buildDishesSection(context, viewModel.dishes),
-                            _buildTagsSection(context, viewModel),
-                            _buildFeaturesSection(context, viewModel),
-                            _buildWorkTimesSection(context, viewModel),
-                          ],
-                        ),
+                      child: Column(
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.all(20.0),
+                            child: _buildHeader(context, viewModel),
+                          ),
+                          TabBar(
+                            controller: _tabController,
+                            tabs: const [
+                              Tab(text: 'About'),
+                              Tab(text: 'Reviews'),
+                            ],
+                            // This is the fix for the ProviderNotFoundException
+                            onTap: (index) {
+                              if (index == 1 && viewModel.reviews.isEmpty) {
+                                viewModel.fetchReviews(widget.restaurantId);
+                              }
+                            },
+                          ),
+                          Expanded(
+                            child: TabBarView(
+                              controller: _tabController,
+                              children: [
+                                _buildAboutTab(context, viewModel, scrollController),
+                                _buildReviewsTab(context, viewModel, scrollController),
+                              ],
+                            ),
+                          ),
+                        ],
                       ),
                     );
                   },
                 ),
 
-                // Booking Button
                 if (viewModel.restaurant != null)
                   Positioned(
                     bottom: 20,
@@ -143,8 +167,6 @@ class RestaurantScreen extends StatelessWidget {
     );
   }
 
-  // --- UI Helper Widgets ---
-
   Widget _buildHeader(BuildContext context, RestaurantViewModel viewModel) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -167,6 +189,98 @@ class RestaurantScreen extends StatelessWidget {
           ],
         ),
       ],
+    );
+  }
+
+  Widget _buildAboutTab(BuildContext context, RestaurantViewModel viewModel, ScrollController scrollController) {
+    return ListView(
+      controller: scrollController,
+      padding: const EdgeInsets.fromLTRB(20, 20, 20, 100),
+      children: [
+        _buildInfoCards(context, viewModel),
+        const SizedBox(height: 16),
+        const Divider(),
+        _buildAboutSection(context, viewModel),
+        _buildLocationSection(context, viewModel),
+        _buildCuisinesSection(context, viewModel),
+        _buildMealTypesSection(context, viewModel),
+        _buildTagsSection(context, viewModel),
+        _buildFeaturesSection(context, viewModel),
+        _buildWorkTimesSection(context, viewModel),
+        _buildDishesSection(context, viewModel.dishes),
+      ],
+    );
+  }
+
+  Widget _buildReviewsTab(BuildContext context, RestaurantViewModel viewModel, ScrollController scrollController) {
+    if (viewModel.isReviewsLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    if (viewModel.reviews.isEmpty) {
+      return const Center(child: Text('No reviews yet.'));
+    }
+
+    return ListView.builder(
+      controller: scrollController,
+      padding: const EdgeInsets.fromLTRB(20, 20, 20, 100),
+      itemCount: viewModel.reviews.length,
+      itemBuilder: (context, index) {
+        final review = viewModel.reviews[index];
+        final averageRating = (review.customerStarRating + review.ServiceStarRating + review.customerFoodStarRating) / 3;
+
+        return Card(
+          margin: const EdgeInsets.only(bottom: 16.0),
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text("Review", style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+                    Row(
+                      children: [
+                        const Icon(Icons.star, color: Colors.amber, size: 16),
+                        const SizedBox(width: 4),
+                        Text(averageRating.toStringAsFixed(1)),
+                      ],
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Text(review.description),
+                const Divider(height: 20),
+                _buildRatingRow(context, 'Food', review.customerFoodStarRating),
+                _buildRatingRow(context, 'Service', review.ServiceStarRating),
+                _buildRatingRow(context, 'Ambiance', review.customerStarRating),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildRatingRow(BuildContext context, String category, double rating) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(category, style: Theme.of(context).textTheme.bodyLarge),
+          Row(
+            children: List.generate(5, (index) {
+              return Icon(
+                index < rating ? Icons.star : Icons.star_border,
+                color: Colors.amber,
+                size: 20,
+              );
+            }),
+          ),
+        ],
+      ),
     );
   }
 
@@ -202,6 +316,35 @@ class RestaurantScreen extends StatelessWidget {
     );
   }
 
+  Widget _buildLocationSection(BuildContext context, RestaurantViewModel viewModel) {
+    if (viewModel.restaurant == null) return const SizedBox.shrink();
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Location',
+          style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w600),
+        ),
+        const SizedBox(height: 12),
+        Card(
+          elevation: 0,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+            side: BorderSide(color: Colors.grey.shade300),
+          ),
+          child: ListTile(
+            leading: Icon(Icons.map_outlined, color: Theme.of(context).primaryColor),
+            title: const Text('View on Map'),
+            subtitle: Text('Lat: ${viewModel.restaurant?.latitude}, Lon: ${viewModel.restaurant?.longitude}'),
+            trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+            onTap: viewModel.openMap,
+          ),
+        ),
+        const SizedBox(height: 24),
+      ],
+    );
+  }
+
   Widget _buildCuisinesSection(BuildContext context, RestaurantViewModel viewModel) {
     if (viewModel.cuisines.isEmpty) return const SizedBox.shrink();
     return Column(
@@ -222,7 +365,6 @@ class RestaurantScreen extends StatelessWidget {
     );
   }
 
-  // New widget for Meal Types
   Widget _buildMealTypesSection(BuildContext context, RestaurantViewModel viewModel) {
     if (viewModel.mealTypes.isEmpty) return const SizedBox.shrink();
     return Column(
@@ -239,91 +381,6 @@ class RestaurantScreen extends StatelessWidget {
           children: viewModel.mealTypes.map((mealType) => Chip(label: Text(mealType.name))).toList(),
         ),
         const SizedBox(height: 24),
-      ],
-    );
-  }
-
-  Widget _buildInfoCard(BuildContext context, IconData icon, String title, String value) {
-    return Expanded(
-      child: Column(
-        children: [
-          Icon(icon, color: Theme.of(context).primaryColor, size: 28),
-          const SizedBox(height: 8),
-          Text(
-            title,
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.grey[600]),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            value,
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildInfoSection(BuildContext context, String title, List<String> items) {
-    if (items.isEmpty) return const SizedBox.shrink();
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          title,
-          style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w600),
-        ),
-        const SizedBox(height: 12),
-        Wrap(
-          spacing: 8.0,
-          runSpacing: 4.0,
-          children: items.map((item) => Chip(label: Text(item))).toList(),
-        ),
-        const SizedBox(height: 24),
-      ],
-    );
-  }
-
-  Widget _buildDishesSection(BuildContext context, List<Dish> dishes) {
-    if (dishes.isEmpty) return const SizedBox.shrink();
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Menu',
-          style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w600),
-        ),
-        const SizedBox(height: 12),
-        ...dishes.map((dish) => Card(
-          margin: const EdgeInsets.only(bottom: 16.0),
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(dish.name, style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
-                      if (dish.description.isNotEmpty && dish.description != 'No Description') ...[
-                        const SizedBox(height: 4.0),
-                        Text(
-                          dish.description,
-                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.grey.shade600),
-                        ),
-                      ],
-                    ],
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Text(
-                  '€${dish.price.toStringAsFixed(2)}',
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold, color: Theme.of(context).primaryColor),
-                ),
-              ],
-            ),
-          ),
-        )),
       ],
     );
   }
@@ -368,37 +425,6 @@ class RestaurantScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildLocationSection(BuildContext context, RestaurantViewModel viewModel) {
-    // Only build the section if the restaurant data is available
-    if (viewModel.restaurant == null) return const SizedBox.shrink();
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Location',
-          style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w600),
-        ),
-        const SizedBox(height: 12),
-        Card(
-          elevation: 0,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-            side: BorderSide(color: Colors.grey.shade300),
-          ),
-          child: ListTile(
-            leading: Icon(Icons.map_outlined, color: Theme.of(context).primaryColor),
-            title: const Text('View on Map'),
-            subtitle: Text('Lat: ${viewModel.restaurant?.latitude}, Lon: ${viewModel.restaurant?.longitude}'),
-            trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-            onTap: viewModel.openMap,
-          ),
-        ),
-        const SizedBox(height: 24),
-      ],
-    );
-  }
-
   Widget _buildWorkTimesSection(BuildContext context, RestaurantViewModel viewModel) {
     if (viewModel.workTimes.isEmpty) return const SizedBox.shrink();
     return Column(
@@ -434,6 +460,71 @@ class RestaurantScreen extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 24),
+      ],
+    );
+  }
+
+  Widget _buildInfoCard(BuildContext context, IconData icon, String title, String value) {
+    return Expanded(
+      child: Column(
+        children: [
+          Icon(icon, color: Theme.of(context).primaryColor, size: 28),
+          const SizedBox(height: 8),
+          Text(
+            title,
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.grey[600]),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            value,
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDishesSection(BuildContext context, List<Dish> dishes) {
+    if (dishes.isEmpty) return const SizedBox.shrink();
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Menu',
+          style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w600),
+        ),
+        const SizedBox(height: 12),
+        ...dishes.map((dish) => Card(
+          margin: const EdgeInsets.only(bottom: 16.0),
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(dish.name, style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+                      if (dish.description.isNotEmpty && dish.description != 'No Description') ...[
+                        const SizedBox(height: 4.0),
+                        Text(
+                          dish.description,
+                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.grey.shade600),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Text(
+                  '€${dish.price.toStringAsFixed(2)}',
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold, color: Theme.of(context).primaryColor),
+                ),
+              ],
+            ),
+          ),
+        )),
       ],
     );
   }

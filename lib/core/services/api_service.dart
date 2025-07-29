@@ -6,7 +6,7 @@ import 'package:jwt_decoder/jwt_decoder.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ApiService {
-  final String _baseUrl = "https://ba3a471a9991.ngrok-free.app";
+  final String _baseUrl = "https://6a150b2d10d1.ngrok-free.app";
 
 
   Future<String?> login(String email, String password) async {
@@ -416,6 +416,28 @@ class ApiService {
       return jsonDecode(response.body);
     } else {
       throw Exception('Failed to load work times for restaurant $restaurantId');
+    }
+  }
+
+  Future<List<dynamic>> getReviewsByRestaurant(String restaurantId) async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token');
+
+    final response = await http.get(
+      Uri.parse('$_baseUrl/RestaurantReview/restaurant/$restaurantId'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+    );
+
+    print("********************************************************************************");
+    print(response.body);
+
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    } else {
+      throw Exception('Failed to load reviews for restaurant $restaurantId');
     }
   }
 }
