@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:user_flutter_project/core/services/api_service.dart';
+import 'package:user_flutter_project/data/models/Amenity.dart';
 import 'package:user_flutter_project/data/models/Room.dart';
 
 import '../../data/models/HotelReservation.dart';
@@ -28,6 +29,15 @@ class HotelReservationViewModel with ChangeNotifier {
   Room? _selectedRoom;
   Room? get selectedRoom => _selectedRoom;
 
+  Room? _roomForDetails;
+  Room? get roomForDetails => _roomForDetails;
+
+  List<Amenity> _roomAmenities = [];
+  List<Amenity> get roomAmenities => _roomAmenities;
+
+  bool _isFetchingAmenities = false;
+  bool get isFetchingAmenities => _isFetchingAmenities;
+
   void setStartDate(DateTime date) {
     _startDate = date;
     if (_endDate != null && _endDate!.isBefore(_startDate!)) {
@@ -50,7 +60,30 @@ class HotelReservationViewModel with ChangeNotifier {
 
   void selectRoom(Room room) {
     _selectedRoom = room;
+    _roomForDetails = null;
     notifyListeners();
+  }
+
+  void cancelRoomSelection() {
+    _roomForDetails = null;
+    _roomAmenities = [];
+    notifyListeners();
+  }
+
+  Future<void> showRoomDetails(Room room) async {
+    _roomForDetails = room;
+    _isFetchingAmenities = true;
+    notifyListeners();
+
+    try {
+      final amenitiesData = await _apiService.getAmenitiesByRoomId(room.id);
+      _roomAmenities = amenitiesData.map((data) => Amenity.fromJson(data)).toList();
+    } catch (e) {
+      _errorMessage = "Failed to load amenities: ${e.toString()}";
+    } finally {
+      _isFetchingAmenities = false;
+      notifyListeners();
+    }
   }
 
   Future<void> fetchRooms(String hotelId) async {
@@ -61,6 +94,7 @@ class HotelReservationViewModel with ChangeNotifier {
     try {
       final roomsData = await _apiService.getRoomsByHotelId(hotelId);
       _rooms = roomsData.map((data) => Room.fromJson(data)).toList();
+      _rooms.sort((a, b) => a.roomNumber.compareTo(b.roomNumber));
     } catch (e) {
       _errorMessage = "Failed to load rooms: ${e.toString()}";
     } finally {
@@ -102,11 +136,11 @@ class HotelReservationViewModel with ChangeNotifier {
         customerId: customerId,
         roomId: _selectedRoom!.id,
         numberOfPeople: _numberOfPeople,
-        receivationStartDate: _startDate!,
-        receivationEndDate: _endDate!,
+        reservationStartDate: _startDate!,
+        reservationEndDate: _endDate!,
       );
 
-      final bool success = await _apiService.createHotelBooking(reservation);
+      final bool success = await _apiService.createHotelReservation(reservation);
       return success;
     } catch (e) {
       _errorMessage = "Failed to submit booking: ${e.toString()}";
