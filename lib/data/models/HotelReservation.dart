@@ -1,4 +1,5 @@
 class HotelReservation {
+  final String id;
   final String hotelId;
   final String customerId;
   final String roomId;
@@ -7,6 +8,7 @@ class HotelReservation {
   final DateTime reservationEndDate;
 
   HotelReservation({
+    this.id = '',
     required this.hotelId,
     required this.customerId,
     required this.roomId,
@@ -17,19 +19,20 @@ class HotelReservation {
 
   Map<String, dynamic> toJson() {
     return {
-      'HotelId': hotelId,
-      'CustomerId': customerId,
-      'RoomId': roomId,
-      'NumberOfPeople': numberOfPeople,
-      'ReservationStartDate':
+      'hotelId': hotelId,
+      'customerId': customerId,
+      'roomId': roomId,
+      'numberOfPeople': numberOfPeople,
+      'reservationStartDate':
       "${reservationStartDate.year.toString().padLeft(4, '0')}-${reservationStartDate.month.toString().padLeft(2, '0')}-${reservationStartDate.day.toString().padLeft(2, '0')}",
-      'ReservationEndDate':
+      'reservationEndDate':
       "${reservationEndDate.year.toString().padLeft(4, '0')}-${reservationEndDate.month.toString().padLeft(2, '0')}-${reservationEndDate.day.toString().padLeft(2, '0')}",
     };
   }
 
   factory HotelReservation.fromJson(Map<String, dynamic> json) {
     return HotelReservation(
+      id: json['id'] ?? '',
       hotelId: json['hotelId'] ?? '',
       customerId: json['customerId'] ?? '',
       roomId: json['roomId'] ?? '',

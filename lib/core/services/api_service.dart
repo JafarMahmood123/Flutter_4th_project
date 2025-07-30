@@ -568,4 +568,26 @@ class ApiService {
       throw Exception('Failed to load hotel reservations');
     }
   }
+
+  Future<dynamic> getReservationById(String reservationId) async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token');
+
+    final response = await http.get(
+      Uri.parse('$_baseUrl/HotelReservations/$reservationId'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+    );
+
+    print("************************************************************************************");
+    print(response.body);
+
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    } else {
+      throw Exception('Failed to load hotel reservation');
+    }
+  }
 }

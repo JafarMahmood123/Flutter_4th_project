@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
-
-import '../viewmodels/hotel_reservations_viewmodel.dart';
+import 'package:user_flutter_project/data/models/HotelReservation.dart';
+import 'package:user_flutter_project/ui/viewmodels/hotel_reservations_viewmodel.dart';
+import 'package:user_flutter_project/ui/views/hotel_reservation_details_screen.dart';
 
 class HotelReservationsScreen extends StatelessWidget {
   @override
@@ -35,22 +36,31 @@ class HotelReservationsScreen extends StatelessWidget {
                 return Card(
                   elevation: 3,
                   margin: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
-                  child: ListTile(
-                    title: Text(
-                      'Reservation ID: ${reservation.hotelId}',
-                      style: const TextStyle(fontWeight: FontWeight.bold),
+                  child: InkWell(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => HotelReservationDetailsScreen(reservation: reservation),
+                        ),
+                      );
+                    },
+                    child: ListTile(
+                      title: Text(
+                        'Hotel ID: ${reservation.hotelId}',
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      subtitle: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const SizedBox(height: 4),
+                          Text('Guests: ${reservation.numberOfPeople}'),
+                          Text('From: ${DateFormat.yMMMd().format(reservation.reservationStartDate)}'),
+                          Text('To: ${DateFormat.yMMMd().format(reservation.reservationEndDate)}'),
+                        ],
+                      ),
+                      trailing: Icon(Icons.arrow_forward_ios, size: 16),
                     ),
-                    subtitle: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const SizedBox(height: 4),
-                        Text('Room ID: ${reservation.roomId}'),
-                        Text('Guests: ${reservation.numberOfPeople}'),
-                        Text('From: ${DateFormat.yMMMd().format(reservation.reservationStartDate)}'),
-                        Text('To: ${DateFormat.yMMMd().format(reservation.reservationEndDate)}'),
-                      ],
-                    ),
-                    isThreeLine: true,
                   ),
                 );
               },
