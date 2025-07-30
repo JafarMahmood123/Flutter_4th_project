@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:user_flutter_project/ui/views/bookings_screen.dart';
+import 'package:user_flutter_project/ui/views/hotel_reservations_screen.dart';
 import 'package:user_flutter_project/ui/views/hotel_screen.dart';
 import 'package:user_flutter_project/ui/views/restaurant_screen.dart';
 import '../viewmodels/home_viewmodel.dart';
@@ -34,12 +35,23 @@ class HomeScreen extends StatelessWidget {
               ),
               ListTile(
                 leading: Icon(Icons.book_online),
-                title: Text('Bookings'),
+                title: Text('Restaurant Bookings'),
                 onTap: () {
                   Navigator.pop(context); // Close the drawer
                   Navigator.push(
                     context,
                     MaterialPageRoute(builder: (context) => BookingsScreen()),
+                  );
+                },
+              ),
+              ListTile(
+                leading: Icon(Icons.hotel),
+                title: Text('Hotel Reservations'),
+                onTap: () {
+                  Navigator.pop(context); // Close the drawer
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => HotelReservationsScreen()),
                   );
                 },
               ),

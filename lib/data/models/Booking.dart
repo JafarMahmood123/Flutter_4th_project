@@ -22,8 +22,6 @@ class Booking {
       bookingDurationTime: json['bookingDurationTime'] ?? '00:00:00',
       numberOfPeople: json['numberOfPeople'] ?? 0,
       restaurantName: json['restaurantName'] ?? 'N/A',
-      // Assuming the backend provides this, otherwise you might need another API call.
-      // For now, let's use a placeholder if it's null.
       restaurantPictureUrl: json['restaurantPictureUrl'] ?? '',
     );
   }

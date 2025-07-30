@@ -8,7 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../data/models/HotelReservation.dart';
 
 class ApiService {
-  final String _baseUrl = "https://4cbc67acfd8f.ngrok-free.app";
+  final String _baseUrl = "https://a94d9f611d39.ngrok-free.app";
 
 
   Future<String?> login(String email, String password) async {
@@ -542,6 +542,30 @@ class ApiService {
       return true;
     } else {
       throw Exception('Failed to create hotel booking');
+    }
+  }
+
+  Future<List<dynamic>> getReservationsByCustomerId() async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token');
+    final userId = await getCustomerId();
+
+    if (token == null || userId == null) {
+      throw Exception('User is not logged in.');
+    }
+
+    final response = await http.get(
+      Uri.parse('$_baseUrl/HotelReservations/customer/$userId'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    } else {
+      throw Exception('Failed to load hotel reservations');
     }
   }
 }

@@ -27,4 +27,19 @@ class HotelReservation {
       "${reservationEndDate.year.toString().padLeft(4, '0')}-${reservationEndDate.month.toString().padLeft(2, '0')}-${reservationEndDate.day.toString().padLeft(2, '0')}",
     };
   }
+
+  factory HotelReservation.fromJson(Map<String, dynamic> json) {
+    return HotelReservation(
+      hotelId: json['hotelId'] ?? '',
+      customerId: json['customerId'] ?? '',
+      roomId: json['roomId'] ?? '',
+      numberOfPeople: json['numberOfPeople'] ?? 0,
+      reservationStartDate: json['reservationStartDate'] != null
+          ? DateTime.parse(json['reservationStartDate'])
+          : DateTime.now(),
+      reservationEndDate: json['reservationEndDate'] != null
+          ? DateTime.parse(json['reservationEndDate'])
+          : DateTime.now(),
+    );
+  }
 }
