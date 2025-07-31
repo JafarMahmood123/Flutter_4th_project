@@ -51,7 +51,8 @@ class HomeScreen extends StatelessWidget {
                   Navigator.pop(context); // Close the drawer
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => HotelReservationsScreen()),
+                    MaterialPageRoute(
+                        builder: (context) => HotelReservationsScreen()),
                   );
                 },
               ),
@@ -68,11 +69,104 @@ class HomeScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // Recommended Restaurants Section
+                  Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Text(
+                      'Recommended Restaurant For You',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  SizedBox(
+                    height: 180, // Increased height
+                    child: ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      padding: EdgeInsets.symmetric(horizontal: 16),
+                      itemCount: viewModel.recommendedRestaurants.length,
+                      itemBuilder: (context, index) {
+                        final restaurant =
+                        viewModel.recommendedRestaurants[index];
+                        // WRAP a portion of the code with InkWell
+                        return InkWell(
+                          // In home_screen.dart, inside the ListView.builder for restaurants:
+
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                // Pass the ID to the RestaurantScreen
+                                builder: (context) =>
+                                    RestaurantScreen(restaurantId: restaurant.id),
+                              ),
+                            );
+                          },
+                          child: Container(
+                            width: 160, // Increased width
+                            margin: EdgeInsets.only(right: 12),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                // WRAP Image with a Hero widget
+                                Hero(
+                                  tag:
+                                  'restaurant-image-${restaurant.id}_recommended',
+                                  child: ClipRRect(
+                                    borderRadius: BorderRadius.circular(8),
+                                    child: Container(
+                                      height: 120, // Increased image height
+                                      width: double.infinity,
+                                      child: Image.network(
+                                        restaurant.pictureUrl,
+                                        fit: BoxFit.cover,
+                                        errorBuilder:
+                                            (context, error, stackTrace) =>
+                                            Container(
+                                              height: 120,
+                                              color: Colors.grey[200],
+                                              child:
+                                              Icon(Icons.restaurant, size: 40),
+                                            ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                SizedBox(height: 8),
+                                Text(
+                                  restaurant.name,
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.w500,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  maxLines: 1,
+                                ),
+                                SizedBox(height: 4),
+                                Row(
+                                  children: [
+                                    Icon(Icons.star,
+                                        color: Colors.amber, size: 16),
+                                    SizedBox(width: 4),
+                                    Text(
+                                      restaurant.starRating.toStringAsFixed(1),
+                                      style: TextStyle(fontSize: 12),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                  SizedBox(height: 24),
                   // Restaurants Section
                   Padding(
                     padding: const EdgeInsets.all(16.0),
                     child: Text(
-                      'Top Restaurants',
+                      'Available Restaurants',
                       style: TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
@@ -96,7 +190,8 @@ class HomeScreen extends StatelessWidget {
                               context,
                               MaterialPageRoute(
                                 // Pass the ID to the RestaurantScreen
-                                builder: (context) => RestaurantScreen(restaurantId: restaurant.id),
+                                builder: (context) =>
+                                    RestaurantScreen(restaurantId: restaurant.id),
                               ),
                             );
                           },
@@ -117,11 +212,13 @@ class HomeScreen extends StatelessWidget {
                                       child: Image.network(
                                         restaurant.pictureUrl,
                                         fit: BoxFit.cover,
-                                        errorBuilder: (context, error, stackTrace) =>
+                                        errorBuilder:
+                                            (context, error, stackTrace) =>
                                             Container(
                                               height: 120,
                                               color: Colors.grey[200],
-                                              child: Icon(Icons.restaurant, size: 40),
+                                              child:
+                                              Icon(Icons.restaurant, size: 40),
                                             ),
                                       ),
                                     ),
@@ -139,7 +236,8 @@ class HomeScreen extends StatelessWidget {
                                 SizedBox(height: 4),
                                 Row(
                                   children: [
-                                    Icon(Icons.star, color: Colors.amber, size: 16),
+                                    Icon(Icons.star,
+                                        color: Colors.amber, size: 16),
                                     SizedBox(width: 4),
                                     Text(
                                       restaurant.starRating.toStringAsFixed(1),
@@ -156,11 +254,43 @@ class HomeScreen extends StatelessWidget {
                   ),
                   SizedBox(height: 24),
 
-                  // Hotels Section
+                  // Recommended Hotels Section - COMING SOON
                   Padding(
                     padding: const EdgeInsets.all(16.0),
                     child: Text(
-                      'Recommended Hotels',
+                      'Recommended Hotels For You',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  Container(
+                    height: 180,
+                    width: double.infinity,
+                    margin: EdgeInsets.symmetric(horizontal: 16),
+                    decoration: BoxDecoration(
+                      color: Colors.grey[300],
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Center(
+                      child: Text(
+                        'Coming Soon',
+                        style: TextStyle(
+                          fontSize: 18,
+                          color: Colors.grey[600],
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 24),
+
+                  // Top Hotels Section
+                  Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Text(
+                      'Available Hotels',
                       style: TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
@@ -180,7 +310,8 @@ class HomeScreen extends StatelessWidget {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) => HotelScreen(hotelId: hotel.id),
+                                builder: (context) =>
+                                    HotelScreen(hotelId: hotel.id),
                               ),
                             );
                           },
@@ -200,7 +331,8 @@ class HomeScreen extends StatelessWidget {
                                       child: Image.network(
                                         hotel.pictureUrl,
                                         fit: BoxFit.cover,
-                                        errorBuilder: (context, error, stackTrace) =>
+                                        errorBuilder:
+                                            (context, error, stackTrace) =>
                                             Container(
                                               height: 120,
                                               color: Colors.grey[200],
@@ -222,7 +354,8 @@ class HomeScreen extends StatelessWidget {
                                 SizedBox(height: 4),
                                 Row(
                                   children: [
-                                    Icon(Icons.star, color: Colors.amber, size: 16),
+                                    Icon(Icons.star,
+                                        color: Colors.amber, size: 16),
                                     SizedBox(width: 4),
                                     Text(
                                       hotel.starRate.toStringAsFixed(1),
