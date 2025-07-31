@@ -8,7 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../data/models/HotelReservation.dart';
 
 class ApiService {
-  final String _baseUrl = "https://a94d9f611d39.ngrok-free.app";
+  final String _baseUrl = "https://ef30ed01964c.ngrok-free.app";
 
 
   Future<String?> login(String email, String password) async {
@@ -580,9 +580,6 @@ class ApiService {
         'Authorization': 'Bearer $token',
       },
     );
-
-    print("************************************************************************************");
-    print(response.body);
 
     if (response.statusCode == 200) {
       return jsonDecode(response.body);

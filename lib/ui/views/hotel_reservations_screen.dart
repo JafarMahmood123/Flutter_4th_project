@@ -25,7 +25,8 @@ class HotelReservationsScreen extends StatelessWidget {
             }
 
             if (viewModel.reservations.isEmpty) {
-              return const Center(child: Text('You have no hotel reservations yet.'));
+              return const Center(
+                  child: Text('You have no hotel reservations yet.'));
             }
 
             return ListView.builder(
@@ -33,21 +34,24 @@ class HotelReservationsScreen extends StatelessWidget {
               itemCount: viewModel.reservations.length,
               itemBuilder: (context, index) {
                 final reservation = viewModel.reservations[index];
+                final hotel = viewModel.hotels[index];
                 return Card(
                   elevation: 3,
-                  margin: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
+                  margin:
+                  const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
                   child: InkWell(
                     onTap: () {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => HotelReservationDetailsScreen(reservation: reservation),
+                          builder: (context) =>
+                              HotelReservationDetailsScreen(reservation: reservation),
                         ),
                       );
                     },
                     child: ListTile(
                       title: Text(
-                        'Hotel ID: ${reservation.hotelId}',
+                        hotel.name,
                         style: const TextStyle(fontWeight: FontWeight.bold),
                       ),
                       subtitle: Column(
@@ -55,8 +59,10 @@ class HotelReservationsScreen extends StatelessWidget {
                         children: [
                           const SizedBox(height: 4),
                           Text('Guests: ${reservation.numberOfPeople}'),
-                          Text('From: ${DateFormat.yMMMd().format(reservation.reservationStartDate)}'),
-                          Text('To: ${DateFormat.yMMMd().format(reservation.reservationEndDate)}'),
+                          Text(
+                              'From: ${DateFormat.yMMMd().format(reservation.reservationStartDate)}'),
+                          Text(
+                              'To: ${DateFormat.yMMMd().format(reservation.reservationEndDate)}'),
                         ],
                       ),
                       trailing: Icon(Icons.arrow_forward_ios, size: 16),
