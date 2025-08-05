@@ -8,7 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../data/models/HotelReservation.dart';
 
 class ApiService {
-  final String _baseUrl = "https://ef30ed01964c.ngrok-free.app";
+  final String _baseUrl = "https://48900cc847a2.ngrok-free.app";
 
 
   Future<String?> login(String email, String password) async {
@@ -27,12 +27,17 @@ class ApiService {
     return null;
   }
 
-  Future<List<dynamic>> getHotels() async {
+  Future<List<dynamic>> getHotels({int page = 1, int pageSize = 10}) async {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('token');
 
+    final uri = Uri.parse('$_baseUrl/Hotels').replace(queryParameters: {
+      'page': page.toString(),
+      'pageSize': pageSize.toString(),
+    });
+
     final response = await http.get(
-      Uri.parse('$_baseUrl/Hotels'),
+      uri,
       headers: {
         'Content-Type': 'application/json',
         'Authorization': 'Bearer $token',
@@ -40,7 +45,10 @@ class ApiService {
     );
 
     if (response.statusCode == 200) {
-      return jsonDecode(response.body);
+      // Decode the full JSON object
+      final Map<String, dynamic> data = jsonDecode(response.body);
+      // Extract and return the list of hotels from the 'items' key
+      return data['items'] as List<dynamic>;
     } else {
       throw Exception('Failed to load hotels');
     }
@@ -101,12 +109,17 @@ class ApiService {
     }
   }
 
-  Future<List<dynamic>> getRestaurants() async {
+  Future<List<dynamic>> getRestaurants({int page = 1, int pageSize = 10}) async {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('token');
 
+    final uri = Uri.parse('$_baseUrl/Restaurants').replace(queryParameters: {
+      'page': page.toString(),
+      'pageSize': pageSize.toString(),
+    });
+
     final response = await http.get(
-      Uri.parse('$_baseUrl/Restaurants'),
+      uri,
       headers: {
         'Content-Type': 'application/json',
         'Authorization': 'Bearer $token',
@@ -114,13 +127,14 @@ class ApiService {
     );
 
     if (response.statusCode == 200) {
-      return jsonDecode(response.body);
+      final Map<String, dynamic> data = jsonDecode(response.body);
+      return data['items'] as List<dynamic>;
     } else {
       throw Exception('Failed to load restaurants');
     }
   }
 
-  Future<List<dynamic>> getRecommendedRestaurants() async {
+  Future<List<dynamic>> getRecommendedRestaurants({int page = 1, int pageSize = 10}) async {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('token');
     final userId = await getCustomerId();
@@ -129,8 +143,13 @@ class ApiService {
       throw Exception('User is not logged in.');
     }
 
+    final uri = Uri.parse('$_baseUrl/RestaurantRecommendation/$userId').replace(queryParameters: {
+      'page': page.toString(),
+      'pageSize': pageSize.toString(),
+    });
+
     final response = await http.get(
-      Uri.parse('$_baseUrl/RestaurantRecommendation/$userId'),
+      uri,
       headers: {
         'Content-Type': 'application/json',
         'Authorization': 'Bearer $token',
@@ -138,7 +157,9 @@ class ApiService {
     );
 
     if (response.statusCode == 200) {
-      return jsonDecode(response.body);
+      final Map<String, dynamic> data = jsonDecode(response.body);
+      // Assuming the same 'items' structure for recommended restaurants
+      return data['items'] as List<dynamic>;
     } else {
       throw Exception('Failed to load recommended restaurants');
     }
@@ -387,9 +408,9 @@ class ApiService {
 
   Future<String> checkExistingLocation(String countryId, String cityId) async {
     final response = await http.post(
-      Uri.parse('$_baseUrl/Location/check'),
+      Uri.parse('$_baseUrl/Locations/check'),
       headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({'countryId': countryId, 'cityId': cityId }),
+      body: jsonEncode({'countryId': countryId, 'cityId': cityId, 'localLocationId': null}),
     );
     if (response.statusCode == 200) {
       return jsonDecode(response.body);
