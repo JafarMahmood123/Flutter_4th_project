@@ -1,5 +1,4 @@
-import 'dart:convert';
-
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:user_flutter_project/data/models/Restaurant.dart';
 import '../../core/services/api_service.dart';
@@ -14,6 +13,13 @@ class HomeViewModel with ChangeNotifier {
   bool _isLoading = false;
   bool get isLoading => _isLoading;
 
+  bool _isSearching = false;
+  bool get isSearching => _isSearching;
+
+  bool isLoggedIn = false;
+
+  Timer? _debounce;
+
   int _hotelPage = 1;
   bool _hasMoreHotels = true;
   bool _isFetchingMoreHotels = false;
@@ -26,27 +32,82 @@ class HomeViewModel with ChangeNotifier {
   bool _hasMoreRecommendedRestaurants = true;
   bool _isFetchingMoreRecommendedRestaurants = false;
 
+  HomeViewModel() {
+    fetchData();
+  }
+
+  @override
+  void dispose() {
+    _debounce?.cancel();
+    super.dispose();
+  }
+
+  Future<void> checkLoginStatus() async {
+    isLoggedIn = await _apiService.isUserLoggedIn();
+    notifyListeners();
+  }
+
   Future<void> fetchData() async {
     _isLoading = true;
     notifyListeners();
 
+    await checkLoginStatus();
+
     try {
       final hotelData = await _apiService.getHotels(page: 1);
       final restaurantData = await _apiService.getRestaurants(page: 1);
-      final recommendedRestaurantData =
-      await _apiService.getRecommendedRestaurants(page: 1);
+
+      if (isLoggedIn) {
+        final recommendedRestaurantData =
+        await _apiService.getRecommendedRestaurants(page: 1);
+        recommendedRestaurants = recommendedRestaurantData
+            .map((json) => Restaurant.fromJson(json))
+            .toList();
+      }
 
       hotels = hotelData.map((json) => Hotel.fromJson(json)).toList();
       restaurants =
           restaurantData.map((json) => Restaurant.fromJson(json)).toList();
-      recommendedRestaurants = recommendedRestaurantData
-          .map((json) => Restaurant.fromJson(json))
-          .toList();
+
     } catch (e) {
       // Handle errors appropriately in a real app
       print(e);
     } finally {
       _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> searchRestaurants(String query) async {
+    if (_debounce?.isActive ?? false) _debounce!.cancel();
+
+    _debounce = Timer(const Duration(milliseconds: 500), () async {
+      _isSearching = true;
+      notifyListeners();
+
+      try {
+        final restaurantData = await _apiService.getRestaurants(subName: query);
+        restaurants = restaurantData.map((json) => Restaurant.fromJson(json)).toList();
+      } catch (e) {
+        print(e);
+      } finally {
+        _isSearching = false;
+        notifyListeners();
+      }
+    });
+  }
+
+  Future<void> clearSearch() async {
+    _isSearching = true;
+    notifyListeners();
+
+    try {
+      final restaurantData = await _apiService.getRestaurants(page: 1);
+      restaurants = restaurantData.map((json) => Restaurant.fromJson(json)).toList();
+    } catch (e) {
+      print(e);
+    } finally {
+      _isSearching = false;
       notifyListeners();
     }
   }

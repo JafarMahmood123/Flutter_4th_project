@@ -3,9 +3,12 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import 'package:user_flutter_project/core/services/api_service.dart';
 import 'package:user_flutter_project/data/models/Dish.dart';
 import 'package:user_flutter_project/data/models/Review.dart';
+import 'package:user_flutter_project/ui/viewmodels/home_viewmodel.dart';
 import 'package:user_flutter_project/ui/viewmodels/restaurant_viewmodel.dart';
+import 'package:user_flutter_project/ui/views/login_screen.dart';
 import 'package:user_flutter_project/ui/views/restaurant_booking_screen.dart';
 
 class RestaurantScreen extends StatefulWidget {
@@ -141,12 +144,31 @@ class _RestaurantScreenState extends State<RestaurantScreen> with SingleTickerPr
                     left: 20,
                     right: 20,
                     child: ElevatedButton.icon(
-                      onPressed: () {
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (context) => RestaurantBookingScreen(restaurant: viewModel.restaurant!),
-                          ),
-                        );
+                      onPressed: () async {
+                        final apiService = ApiService();
+                        final isLoggedIn = await apiService.isUserLoggedIn();
+                        if (isLoggedIn) {
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (context) => RestaurantBookingScreen(restaurant: viewModel.restaurant!),
+                            ),
+                          );
+                        } else {
+                          final loginResult = await Navigator.of(context).push<bool>(
+                            MaterialPageRoute(
+                              builder: (context) => LoginScreen(),
+                            ),
+                          );
+
+                          if (loginResult == true && context.mounted) {
+                            // Proceed to the booking screen
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (context) => RestaurantBookingScreen(restaurant: viewModel.restaurant!),
+                              ),
+                            );
+                          }
+                        }
                       },
                       icon: const Icon(Icons.calendar_today),
                       label: const Text('Book a Table'),

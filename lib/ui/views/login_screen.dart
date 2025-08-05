@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:user_flutter_project/ui/views/signup_screen.dart'; // Import the new screen
+import 'package:user_flutter_project/ui/viewmodels/home_viewmodel.dart';
+import 'package:user_flutter_project/ui/views/signup_screen.dart';
 import '../viewmodels/login_viewmodel.dart';
-import 'home_screen.dart';
 
 class LoginScreen extends StatelessWidget {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+
+  LoginScreen();
 
   @override
   Widget build(BuildContext context) {
@@ -89,12 +91,12 @@ class LoginScreen extends StatelessWidget {
                           _emailController.text.trim(),
                           _passwordController.text.trim(),
                         );
-                        if (success) {
-                          Navigator.of(context).pushReplacement(
-                            MaterialPageRoute(
-                                builder: (context) => HomeScreen()),
-                          );
-                        } else {
+                        if (success && context.mounted) {
+                          // Refresh the HomeViewModel's state before leaving the login screen
+                          await Provider.of<HomeViewModel>(context, listen: false).fetchData();
+                          // Pop the screen and return true to signal success
+                          Navigator.of(context).pop(true);
+                        } else if (context.mounted) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
                               content: Text(viewModel.errorMessage ??

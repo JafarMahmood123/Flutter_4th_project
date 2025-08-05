@@ -1,7 +1,11 @@
+// lib/ui/views/hotel_screen.dart
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:user_flutter_project/core/services/api_service.dart';
 import 'package:user_flutter_project/ui/viewmodels/hotel_viewmodel.dart';
 import 'package:user_flutter_project/ui/views/hotel_reservation_screen.dart';
+import 'package:user_flutter_project/ui/views/login_screen.dart';
 
 class HotelScreen extends StatelessWidget {
   final String hotelId;
@@ -172,12 +176,31 @@ class HotelScreen extends StatelessWidget {
                   left: 20,
                   right: 20,
                   child: ElevatedButton.icon(
-                    onPressed: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (context) => HotelReservationScreen(hotel: hotel),
-                        ),
-                      );
+                    onPressed: () async {
+                      final apiService = ApiService();
+                      final isLoggedIn = await apiService.isUserLoggedIn();
+                      if (isLoggedIn) {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (context) => HotelReservationScreen(hotel: hotel),
+                          ),
+                        );
+                      } else {
+                        final loginResult = await Navigator.of(context).push<bool>(
+                          MaterialPageRoute(
+                            builder: (context) => LoginScreen(),
+                          ),
+                        );
+
+                        if (loginResult == true && context.mounted) {
+                          // Proceed to the reservation screen
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (context) => HotelReservationScreen(hotel: hotel),
+                            ),
+                          );
+                        }
+                      }
                     },
                     icon: const Icon(Icons.calendar_today),
                     label: const Text('Reserve'),

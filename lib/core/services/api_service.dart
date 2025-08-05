@@ -4,11 +4,12 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:jwt_decoder/jwt_decoder.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:user_flutter_project/ui/views/login_screen.dart';
 
 import '../../data/models/HotelReservation.dart';
 
 class ApiService {
-  final String _baseUrl = "https://48900cc847a2.ngrok-free.app";
+  final String _baseUrl = "https://4330f049a66b.ngrok-free.app";
 
 
   Future<String?> login(String email, String password) async {
@@ -25,6 +26,35 @@ class ApiService {
       return token;
     }
     return null;
+  }
+
+  Future<void> logout() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('token');
+  }
+
+  Future<bool> isUserLoggedIn() async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token');
+    return token != null;
+  }
+
+  Future<dynamic> getUserById(String userId) async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token');
+    final response = await http.get(
+      Uri.parse('$_baseUrl/User/$userId'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    } else {
+      throw Exception('Failed to load user data');
+    }
   }
 
   Future<List<dynamic>> getHotels({int page = 1, int pageSize = 10}) async {
@@ -109,14 +139,20 @@ class ApiService {
     }
   }
 
-  Future<List<dynamic>> getRestaurants({int page = 1, int pageSize = 10}) async {
+  Future<List<dynamic>> getRestaurants({int page = 1, int pageSize = 10, String? subName}) async {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('token');
 
-    final uri = Uri.parse('$_baseUrl/Restaurants').replace(queryParameters: {
+    final queryParameters = {
       'page': page.toString(),
       'pageSize': pageSize.toString(),
-    });
+    };
+
+    if (subName != null && subName.isNotEmpty) {
+      queryParameters['subName'] = subName;
+    }
+
+    final uri = Uri.parse('$_baseUrl/Restaurants').replace(queryParameters: queryParameters);
 
     final response = await http.get(
       uri,
@@ -125,9 +161,6 @@ class ApiService {
         'Authorization': 'Bearer $token',
       },
     );
-
-    print('***********************************************************************************');
-    print(response.body);
 
     if (response.statusCode == 200) {
       final Map<String, dynamic> data = jsonDecode(response.body);
@@ -146,7 +179,7 @@ class ApiService {
       throw Exception('User is not logged in.');
     }
 
-    final uri = Uri.parse('$_baseUrl/RestaurantRecommendation/$userId').replace(queryParameters: {
+    final uri = Uri.parse('$_baseUrl/RestaurantRecommendations/$userId').replace(queryParameters: {
       'page': page.toString(),
       'pageSize': pageSize.toString(),
     });
@@ -303,6 +336,8 @@ class ApiService {
 
     if (response.statusCode == 200) {
       return jsonDecode(response.body);
+    } else if (response.statusCode == 204) {
+      return []; // Return an empty list for "No Content"
     } else {
       throw Exception('Failed to load bookings: ${response.statusCode}');
     }
