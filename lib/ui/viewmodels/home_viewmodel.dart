@@ -14,15 +14,27 @@ class HomeViewModel with ChangeNotifier {
   bool _isLoading = false;
   bool get isLoading => _isLoading;
 
+  int _hotelPage = 1;
+  bool _hasMoreHotels = true;
+  bool _isFetchingMoreHotels = false;
+
+  int _restaurantPage = 1;
+  bool _hasMoreRestaurants = true;
+  bool _isFetchingMoreRestaurants = false;
+
+  int _recommendedRestaurantPage = 1;
+  bool _hasMoreRecommendedRestaurants = true;
+  bool _isFetchingMoreRecommendedRestaurants = false;
+
   Future<void> fetchData() async {
     _isLoading = true;
     notifyListeners();
 
     try {
-      final hotelData = await _apiService.getHotels();
-      final restaurantData = await _apiService.getRestaurants();
+      final hotelData = await _apiService.getHotels(page: 1);
+      final restaurantData = await _apiService.getRestaurants(page: 1);
       final recommendedRestaurantData =
-      await _apiService.getRecommendedRestaurants();
+      await _apiService.getRecommendedRestaurants(page: 1);
 
       hotels = hotelData.map((json) => Hotel.fromJson(json)).toList();
       restaurants =
@@ -35,6 +47,75 @@ class HomeViewModel with ChangeNotifier {
       print(e);
     } finally {
       _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> fetchMoreHotels() async {
+    if (_isFetchingMoreHotels || !_hasMoreHotels) return;
+
+    _isFetchingMoreHotels = true;
+    notifyListeners();
+
+    try {
+      final hotelData = await _apiService.getHotels(page: ++_hotelPage);
+      if (hotelData.isEmpty) {
+        _hasMoreHotels = false;
+      } else {
+        hotels.addAll(hotelData.map((json) => Hotel.fromJson(json)).toList());
+      }
+    } catch (e) {
+      print(e);
+    } finally {
+      _isFetchingMoreHotels = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> fetchMoreRestaurants() async {
+    if (_isFetchingMoreRestaurants || !_hasMoreRestaurants) return;
+
+    _isFetchingMoreRestaurants = true;
+    notifyListeners();
+
+    try {
+      final restaurantData =
+      await _apiService.getRestaurants(page: ++_restaurantPage);
+      if (restaurantData.isEmpty) {
+        _hasMoreRestaurants = false;
+      } else {
+        restaurants.addAll(
+            restaurantData.map((json) => Restaurant.fromJson(json)).toList());
+      }
+    } catch (e) {
+      print(e);
+    } finally {
+      _isFetchingMoreRestaurants = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> fetchMoreRecommendedRestaurants() async {
+    if (_isFetchingMoreRecommendedRestaurants ||
+        !_hasMoreRecommendedRestaurants) return;
+
+    _isFetchingMoreRecommendedRestaurants = true;
+    notifyListeners();
+
+    try {
+      final recommendedRestaurantData = await _apiService
+          .getRecommendedRestaurants(page: ++_recommendedRestaurantPage);
+      if (recommendedRestaurantData.isEmpty) {
+        _hasMoreRecommendedRestaurants = false;
+      } else {
+        recommendedRestaurants.addAll(recommendedRestaurantData
+            .map((json) => Restaurant.fromJson(json))
+            .toList());
+      }
+    } catch (e) {
+      print(e);
+    } finally {
+      _isFetchingMoreRecommendedRestaurants = false;
       notifyListeners();
     }
   }

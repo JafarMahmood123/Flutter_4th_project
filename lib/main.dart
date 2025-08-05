@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:user_flutter_project/ui/viewmodels/home_viewmodel.dart';
 import 'ui/viewmodels/login_viewmodel.dart';
 import 'ui/views/login_screen.dart';
 import 'ui/views/home_screen.dart';
@@ -8,7 +9,7 @@ import 'ui/views/home_screen.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final prefs = await SharedPreferences.getInstance();
-  final token = null;
+  final token = prefs.getString('token');
 
   runApp(MyApp(isLoggedIn: token != null));
 }
@@ -22,6 +23,7 @@ class MyApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => LoginViewModel()),
+        ChangeNotifierProvider(create: (_) => HomeViewModel()), // Added this line
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,

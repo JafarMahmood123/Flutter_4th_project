@@ -126,6 +126,9 @@ class ApiService {
       },
     );
 
+    print('***********************************************************************************');
+    print(response.body);
+
     if (response.statusCode == 200) {
       final Map<String, dynamic> data = jsonDecode(response.body);
       return data['items'] as List<dynamic>;
@@ -277,7 +280,7 @@ class ApiService {
   }
 
   /// Fetches all restaurant bookings for the current user.
-  Future<List<dynamic>> getUserBookings() async {
+  Future<List<dynamic>> getUserBookings({int page = 1, int pageSize = 10}) async {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('token');
     final userId = await getCustomerId();
@@ -288,7 +291,10 @@ class ApiService {
 
     final response = await http.get(
       // Your backend has the endpoint GetRestaurantBookingsByCustomerId
-      Uri.parse('$_baseUrl/RestaurantBooking/customer/$userId'),
+      Uri.parse('$_baseUrl/RestaurantBooking/customer/$userId').replace(queryParameters: {
+        'page': page.toString(),
+        'pageSize': pageSize.toString(),
+      }),
       headers: {
         'Content-Type': 'application/json',
         'Authorization': 'Bearer $token',
@@ -590,7 +596,7 @@ class ApiService {
     }
   }
 
-  Future<List<dynamic>> getReservationsByCustomerId() async {
+  Future<List<dynamic>> getReservationsByCustomerId({int page = 1, int pageSize = 10}) async {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('token');
     final userId = await getCustomerId();
@@ -600,7 +606,10 @@ class ApiService {
     }
 
     final response = await http.get(
-      Uri.parse('$_baseUrl/HotelReservations/customer/$userId'),
+      Uri.parse('$_baseUrl/HotelReservations/customer/$userId').replace(queryParameters: {
+        'page': page.toString(),
+        'pageSize': pageSize.toString(),
+      }),
       headers: {
         'Content-Type': 'application/json',
         'Authorization': 'Bearer $token',
